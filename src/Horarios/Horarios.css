@@ -1,0 +1,38 @@
+.horarios-container {
+    display: flex;
+  }
+  
+  .navbar-left {
+    width: 250px;
+    position: fixed;
+    left: 0; /* Mover el navbar a la izquierda */
+    top: 0;
+    height: 100%;
+    background-color: #f4f4f4;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Cambiar sombra al lado derecho del navbar */
+  }
+  
+  .navbar-left h2 {
+    margin-bottom: 10px;
+  }
+  
+  .navbar-left ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .navbar-left ul li {
+    margin-bottom: 10px;
+  }
+  
+  .navbar-left ul li a {
+    text-decoration: none;
+    color: #333;
+  }
+  
+  .horarios-content {
+    margin-left: 220px; /* Deja espacio para el navbar a la izquierda */
+    padding: 20px;
+  }
+  
