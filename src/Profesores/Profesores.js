@@ -1,132 +1,57 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Table, Select,Button, Typography } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
 
-const Profesores = () => {
-  const [profesores, setProfesores] = useState([]);
-  const [newProfesor, setNewProfesor] = useState({
-    nombre: '',
-    materias: '',
-    grupo: '',
-    diasDisponibles: [], // Para seleccionar los días de trabajo
-    horasTrabajo: {}, // Para ingresar las horas de trabajo por día
-    tiempo_completo: false
-  });
 
-  const handleAddProfesor = async () => {
-    try {
-      const response = await fetch('http://localhost:3001/api/profesores', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newProfesor)
-      });
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-      console.log(data.message);
-      setProfesores([...profesores, newProfesor]);
-      setNewProfesor({ nombre: '', materias: '', grupo: '', diasDisponibles: [], horasTrabajo: {}, tiempo_completo: false });
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
+const { Title, Text } = Typography;
+const { Option } = Select;
 
-  const handleDiaChange = (dia) => {
-    setNewProfesor((prevState) => {
-      const diasDisponibles = prevState.diasDisponibles.includes(dia)
-        ? prevState.diasDisponibles.filter((d) => d !== dia)
-        : [...prevState.diasDisponibles, dia];
-      return { ...prevState, diasDisponibles };
-    });
-  };
+const scheduleData = [
+  { time: '5:00 PM - 6:00 PM', lunes: 'CLASE1', martes: 'CLASE1', miercoles: 'CLASE1', jueves: 'CLASE1', viernes: 'CLASE1' },
+  { time: '6:00 PM - 7:00 PM', lunes: 'CLASE2', martes: 'CLASE2', miercoles: 'CLASE2', jueves: 'CLASE2', viernes: 'CLASE2' },
+  { time: '7:00 PM - 8:00 PM', lunes: 'CLASE3', martes: 'CLASE3', miercoles: 'CLASE3', jueves: 'CLASE3', viernes: 'CLASE3' },
+  { time: '8:00 PM - 9:00 PM', lunes: 'CLASE4', martes: 'CLASE4', miercoles: 'CLASE4', jueves: 'CLASE4', viernes: 'CLASE4' },
+  { time: '9:00 PM - 10:00 PM', lunes: 'CLASE5', martes: 'CLASE5', miercoles: 'CLASE5', jueves: 'CLASE5', viernes: 'CLASE5' },
+];
 
-  const handleHorasChange = (dia, horas) => {
-    setNewProfesor((prevState) => {
-      const horasTrabajo = { ...prevState.horasTrabajo, [dia]: horas };
-      return { ...prevState, horasTrabajo };
-    });
-  };
+const columns = [
+  { title: '', dataIndex: 'time', key: 'time' },
+  { title: 'Lunes', dataIndex: 'lunes', key: 'lunes' },
+  { title: 'Martes', dataIndex: 'martes', key: 'martes' },
+  { title: 'Miércoles', dataIndex: 'miercoles', key: 'miercoles' },
+  { title: 'Jueves', dataIndex: 'jueves', key: 'jueves' },
+  { title: 'Viernes', dataIndex: 'viernes', key: 'viernes' },
+];
 
+const Horarios = () => {
   return (
     <div>
-      <h1>Profesores</h1>
-      <ul>
-        {profesores.map((profesor, index) => (
-          <li key={index}>
-            {profesor.nombre} - Materias: {profesor.materias} - Grupo: {profesor.grupo} - Días: {profesor.diasDisponibles.join(', ')} - Tiempo Completo: {profesor.tiempo_completo ? 'Sí' : 'No'}
-          </li>
-        ))}
-      </ul>
-      <div>
-        <h2>Agregar Profesor</h2>
-        <input
-          type="text"
-          placeholder="Nombre del profesor"
-          value={newProfesor.nombre}
-          onChange={(e) => setNewProfesor({ ...newProfesor, nombre: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Apellido Paterno"
-          value={newProfesor.materias}
-          onChange={(e) => setNewProfesor({ ...newProfesor, materias: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Apellido Materno"
-          value={newProfesor.materias}
-          onChange={(e) => setNewProfesor({ ...newProfesor, materias: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Materias (separadas por coma)"
-          value={newProfesor.materias}
-          onChange={(e) => setNewProfesor({ ...newProfesor, materias: e.target.value })}
-        />
+      <Title level={2}>Horarios disponibles:</Title>
+      <Text>Consulta tus horarios por grupo asignado.</Text>
+      <Select defaultValue="IDGS11" style={{ width: 120, margin: '20px 0' }}>
+        <Option value="IDGS11">IDGS11</Option>
+        <Option value="IDGS12">IDGS12</Option>
+      </Select>
 
-        <h3>Días Disponibles y Horas</h3>
-        {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map((dia) => (
-          <div key={dia}>
-            <label>
-              <input
-                type="checkbox"
-                checked={newProfesor.diasDisponibles.includes(dia)}
-                onChange={() => handleDiaChange(dia)}
-              />
-              {dia}
-            </label>
-
-            {/* Mostrar campo de horas solo si el día está seleccionado */}
-            {newProfesor.diasDisponibles.includes(dia) && (
-              <div>
-                <label>Horas de trabajo para {dia}: </label>
-                <input
-                  type="text"
-                  placeholder="Ejemplo: 08:00 - 14:00"
-                  value={newProfesor.horasTrabajo[dia] || ''}
-                  onChange={(e) => handleHorasChange(dia, e.target.value)}
-                />
-              </div>
-            )}
-          </div>
-        ))}
-
-        <label>
-          Tiempo Completo:
-          <input
-            type="checkbox"
-            checked={newProfesor.tiempo_completo}
-            onChange={(e) => setNewProfesor({ ...newProfesor, tiempo_completo: e.target.checked })}
-          />
-        </label>
-
-        <button onClick={handleAddProfesor}>Agregar</button>
-      </div>
+      <Table 
+        columns={columns} 
+        dataSource={scheduleData} 
+        rowKey="time" 
+        pagination={false} 
+        bordered 
+        style={{ marginTop: '20px' }}
+      />
+                <Button
+            type="link"
+            icon={<DownloadOutlined />}
+            style={{ marginTop: '20px', fontWeight: 'bold' }}
+          >
+            Descargar Horario en PDF
+          </Button>
     </div>
+    
+    
   );
 };
 
-export default Profesores;
+export default Horarios;
