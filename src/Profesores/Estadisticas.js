@@ -11,7 +11,17 @@ const data = [
 
 const Estadisticas = () => {
   return (
-    <div>
+    <div >     
+      
+      {/*navbar*/}
+      <aside className="sidebar">
+        <h2>Menú</h2>
+        <ul>
+          <li>Encuesta de profesores</li>
+          <li>Horarios</li>
+        </ul>
+      </aside>
+
       <Title level={2}>Estadísticas de Evaluación Docente</Title>
       <Text>Resumen de tus evaluaciones</Text>
 

@@ -55,15 +55,16 @@ const Horarios = () => {
     <div className="horarios-container">
 
 
-      <div className="navbar-left">
+
+      
+      {/*navbar*/}
+      <aside className="sidebar">
         <h2>Menú</h2>
-        <hr />
         <ul>
-          <li><a href="#">Ver Horarios</a></li>
-          <li><a href="#">Agregar Horario</a></li>
-          <li><a href="#">Configuración</a></li>
+          <li>Encuesta de profesores</li>
+          <li>Horarios</li>
         </ul>
-      </div>
+      </aside>
 
 
 
