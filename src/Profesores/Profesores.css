@@ -1,0 +1,10 @@
+.sidebar {
+    width: 240px;
+    background: linear-gradient(to bottom, #66ccff, #66ffcc);
+    padding: 20px;
+    color: #fff;
+    position: fixed; /* Hace que el menú se quede fijo */
+    top: 0; /* Ajusta para que se quede al inicio de la página */
+    left: 0; /* Asegura que esté pegado al borde izquierdo */
+    height: 100vh; /* Hace que ocupe toda la altura de la pantalla */
+  }

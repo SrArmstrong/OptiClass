@@ -1,0 +1,394 @@
+<!--<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Generador de Horarios</title>
+</head>
+<body>
+  <h2>Datos de Grupos</h2>
+  <ul id="listaGrupos">
+    <li>IDGS09</li>
+    <li>IDGS010</li>
+    <li>IDGS011</li>
+  </ul>
+
+  <h2>Datos de Materias y Profesores</h2>
+  <input type="text" id="materia" placeholder="Materia (Ejemplo: ADT)">
+  <input type="text" id="profesor" placeholder="Nombre del Profesor">
+  <input type="number" id="calificacion" placeholder="Calificación (Ejemplo: 4)">
+  <button onclick="agregarMateriaProfesor()">Agregar Materia y Profesor</button>
+  <ul id="listaMateriasProfesores"></ul>
+
+  <button onclick="generarHorario()">Generar Horarios</button>
+  <div id="resultadoHorario"></div>
+
+  <script>
+    const grupos = ["IDGS09", "IDGS010", "IDGS011"];
+    const materiasProfesores = [];
+
+    // Aulas y edificios predefinidos
+    const edificiosAulas = {
+      "Edificio K": ["Aula 11", "Aula 12", "Aula 13", "Aula 14", "Aula 15", "Aula 16", "Aula 17", "Aula 18", "SUM", "SAV"],
+      "Edificio I": ["Aula 9", "Aula 10", "Aula 11"],
+      "Edificio J": ["Aula 10", "Aula 11", "Aula 12", "Aula 13"]
+    };
+
+    function agregarMateriaProfesor() {
+      const materia = document.getElementById('materia').value;
+      const profesor = document.getElementById('profesor').value;
+      const calificacion = parseInt(document.getElementById('calificacion').value);
+      if (materia && profesor && !isNaN(calificacion)) {
+        materiasProfesores.push({ materia, profesor, calificacion });
+        document.getElementById('listaMateriasProfesores').innerHTML += `<li>${materia}, ${profesor}, Calificación: ${calificacion}</li>`;
+        document.getElementById('materia').value = '';
+        document.getElementById('profesor').value = '';
+        document.getElementById('calificacion').value = '';
+      }
+    }
+
+    function generarHorario() {
+      const horas = ["5:00 - 6:00", "6:00 - 7:00", "7:00 - 8:00", "8:00 - 9:00", "9:00 - 10:00"];
+      const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+
+      let resultado = "<h3>Horarios Generados</h3>";
+
+      grupos.forEach(grupo => {
+        resultado += `<h4>Horario para ${grupo}</h4>`;
+        resultado += "<table border='1' cellspacing='0' cellpadding='5'><tr><th>Hora</th>";
+
+        // Encabezados de días
+        dias.forEach(dia => resultado += `<th>${dia}</th>`);
+        resultado += "</tr>";
+
+        const horariosOcupados = {};
+
+        horas.forEach(hora => {
+          resultado += `<tr><td>${hora}</td>`;
+          
+          dias.forEach(dia => {
+            let asignacionValida = false;
+            let materiaProfesor;
+            let edificio;
+            let aula;
+
+            // Reintentar hasta encontrar una combinación válida sin conflictos
+            while (!asignacionValida) {
+              // Selección aleatoria de materia, profesor, edificio y aula
+              materiaProfesor = materiasProfesores[Math.floor(Math.random() * materiasProfesores.length)];
+              edificio = Object.keys(edificiosAulas)[Math.floor(Math.random() * Object.keys(edificiosAulas).length)];
+              aula = edificiosAulas[edificio][Math.floor(Math.random() * edificiosAulas[edificio].length)];
+
+              // Verificar si la combinación ya está ocupada en el horario de este grupo para evitar conflictos
+              if (!horariosOcupados[hora]) horariosOcupados[hora] = {};
+              if (!horariosOcupados[hora][dia]) horariosOcupados[hora][dia] = new Set();
+
+              if (!horariosOcupados[hora][dia].has(materiaProfesor.profesor)) {
+                horariosOcupados[hora][dia].add(materiaProfesor.profesor);
+                asignacionValida = true;
+              }
+            }
+
+            // Agregar datos a la celda de la tabla
+            resultado += `<td>${materiaProfesor ? `${materiaProfesor.materia} - ${materiaProfesor.profesor}` : "N/A"}<br>${edificio}, ${aula}</td>`;
+          });
+          
+          resultado += "</tr>";
+        });
+
+        resultado += "</table><br>";
+      });
+
+      document.getElementById('resultadoHorario').innerHTML = resultado;
+    }
+  </script>
+</body>
+</html>
+-->
+<!---->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horarios de Profesores y Grupos</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #generateButton {
+            margin: 20px 0;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #generateButton:hover {
+            background-color: #45a049;
+        }
+        .grupo-section {
+            margin-bottom: 30px;
+        }
+        .grupo-section h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Horarios de Profesores</h1>
+    <table id="profesoresTable">
+        <thead>
+            <tr>
+                <th>Asignatura</th>
+                <th>Edificio</th>
+                <th>Aula</th>
+                <th>Profesor</th>
+                <th>Apellido Paterno</th>
+                <th>Apellido Materno</th>
+                <th>Días de Trabajo</th>
+                <th>Hora Inicio</th>
+                <th>Hora Fin</th>
+                <th>Calificación</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h1>Grupos</h1>
+    <table id="gruposTable">
+        <thead>
+            <tr>
+                <th>ID Grupo</th>
+                <th>Nombre</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- Botón para generar los horarios -->
+    <button id="generateButton">Generar Horarios</button>
+
+    <!-- Contenedor de horarios por grupo -->
+    <div id="horariosPorGrupo"></div>
+
+    <script>
+        let dataCache = null;
+
+        // Función para obtener y mostrar los datos en las tablas
+        async function fetchAndDisplayData() {
+            try {
+                const response = await fetch('http://localhost:3000/datos'); // Endpoint del servidor
+                const data = await response.json();
+                
+                dataCache = data; // Almacena los datos en cache para usarlos en la generación del horario
+
+                // Referencias a los cuerpos de las tablas
+                const profesoresTableBody = document.querySelector('#profesoresTable tbody');
+                const gruposTableBody = document.querySelector('#gruposTable tbody');
+
+                // Limpiar las tablas antes de agregar datos
+                profesoresTableBody.innerHTML = '';
+                gruposTableBody.innerHTML = '';
+
+                // Llenar tabla de Profesores
+                data.Profesores.forEach(profesor => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${profesor.asignatura || 'N/A'}</td>
+                        <td>${profesor.edificio || 'N/A'}</td>
+                        <td>${profesor.aula || 'N/A'}</td>
+                        <td>${profesor.profesor || 'N/A'}</td>
+                        <td>${profesor.appaterno || 'N/A'}</td>
+                        <td>${profesor.apmaterno || 'N/A'}</td>
+                        <td>${profesor.dias_trabajo || 'N/A'}</td>
+                        <td>${profesor.horainicio_trabajo || 'N/A'}</td>
+                        <td>${profesor.horafin_trabajo || 'N/A'}</td>
+                        <td>${profesor.calificación || 'N/A'}</td>
+                    `;
+                    profesoresTableBody.appendChild(row);
+                });
+
+                // Llenar tabla de Grupos
+                data.Grupos.forEach(grupo => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${grupo.id_grupo}</td>
+                        <td>${grupo.nombre}</td>
+                    `;
+                    gruposTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error al obtener los datos:', error);
+            }
+        }
+
+        // Función para generar los horarios y separarlos por grupo
+        function generarHorarios() {
+            if (!dataCache) {
+                alert('Los datos no están disponibles. Por favor, recargue la página.');
+                return;
+            }
+
+            const grupos = dataCache.Grupos;
+            const profesores = dataCache.Profesores;
+            const horas = ["5:00 - 6:00", "6:00 - 7:00", "7:00 - 8:00", "8:00 - 9:00", "9:00 - 10:00"];
+            const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+
+            const horariosPorGrupoContainer = document.querySelector('#horariosPorGrupo');
+            horariosPorGrupoContainer.innerHTML = ''; // Limpiar los horarios generados
+
+            /*
+            // Generar horario por cada grupo
+            grupos.forEach(grupo => {
+                const grupoSection = document.createElement('div');
+                grupoSection.classList.add('grupo-section');
+                const grupoTitle = document.createElement('h3');
+                grupoTitle.textContent = `Horario para el Grupo: ${grupo.nombre}`;
+                grupoSection.appendChild(grupoTitle);
+
+                const horarioTable = document.createElement('table');
+                const tableHeader = document.createElement('thead');
+                tableHeader.innerHTML = `
+                    <tr>
+                        <th>Asignatura</th>
+                        <th>Profesor</th>
+                        <th>Edificio</th>
+                        <th>Aula</th>
+                        <th>Hora Inicio</th>
+                        <th>Hora Fin</th>
+                        <th>Día</th>
+                    </tr>
+                `;
+                tableHeader.innerHTML = `
+                    <tr>
+                        <th>Asignatura</th>
+                        <th>Profesor</th>
+                        <th>Edificio</th>
+                        <th>Aula</th>
+                        <th>Hora Inicio</th>
+                        <th>Hora Fin</th>
+                        <th>Día</th>
+                    </tr>
+                `;
+                horarioTable.appendChild(tableHeader);
+
+                const horarioTableBody = document.createElement('tbody');
+                horarioTable.appendChild(horarioTableBody);
+                grupoSection.appendChild(horarioTable);
+
+                // Generar horarios para este grupo
+                horas.forEach(hora => {
+                    dias.forEach(dia => {
+                        const row = document.createElement('tr');
+                        // Selección aleatoria de un profesor para el grupo y el día
+                        const profesor = profesores[Math.floor(Math.random() * profesores.length)];
+
+                        row.innerHTML = `
+                            <td>${profesor.asignatura || 'N/A'}</td>
+                            <td>${profesor.profesor || 'N/A'}</td>
+                            <td>${profesor.edificio || 'N/A'}</td>
+                            <td>${profesor.aula || 'N/A'}</td>
+                            <td>${hora}</td>
+                            <td>${hora}</td>
+                            <td>${dia}</td>
+                        `;
+                        horarioTableBody.appendChild(row);
+                    });
+                });
+
+                horariosPorGrupoContainer.appendChild(grupoSection);
+            });*/
+            
+            // Generar horario por cada grupo
+            // Definimos los intervalos de horas
+            const intervalosHoras = [
+                "5:00 - 6:00",
+                "6:00 - 7:00",
+                "7:00 - 8:00",
+                "8:00 - 9:00",
+                "9:00 - 10:00"
+            ];
+
+            grupos.forEach(grupo => {
+                const grupoSection = document.createElement('div');
+                grupoSection.classList.add('grupo-section');
+                const grupoTitle = document.createElement('h3');
+                grupoTitle.textContent = `Horario para el Grupo: ${grupo.nombre}`;
+                grupoSection.appendChild(grupoTitle);
+
+                const horarioTable = document.createElement('table');
+                const tableHeader = document.createElement('thead');
+                tableHeader.innerHTML = `
+                    <tr>
+                        <th>Hora</th>
+                        <th>Lunes</th>
+                        <th>Martes</th>
+                        <th>Miércoles</th>
+                        <th>Jueves</th>
+                        <th>Viernes</th>
+                    </tr>
+                `;
+                horarioTable.appendChild(tableHeader);
+
+                const horarioTableBody = document.createElement('tbody');
+                horarioTable.appendChild(horarioTableBody);
+                grupoSection.appendChild(horarioTable);
+
+                // Generar una fila para cada intervalo de hora
+                intervalosHoras.forEach(horaIntervalo => {
+                    const row = document.createElement('tr');
+                    
+                    // Celda con el intervalo de hora
+                    const horaCell = document.createElement('td');
+                    horaCell.textContent = horaIntervalo;
+                    row.appendChild(horaCell);
+
+                    // Generar los datos de asignaturas, profesores, etc. para cada día
+                    dias.forEach(dia => {
+                        const profesor = profesores[Math.floor(Math.random() * profesores.length)];
+                        const asignatura = profesor.asignatura || 'N/A';
+                        const nombre = profesor.profesor || 'N/A';
+                        const appaterno = profesor.appaterno || 'N/A';
+                        const apmaterno = profesor.apmaterno || 'N/A';
+                        const edificio = profesor.edificio || 'N/A';
+                        const aula = profesor.aula || 'N/A';
+
+                        const horarioCell = document.createElement('td');
+                        horarioCell.innerHTML = `
+                            <div center> <h1><b>${asignatura}</b></h1> </div>
+                            ${nombre}
+                            ${appaterno}
+                            ${apmaterno} <br>
+                            Edificio: ${edificio}, ${aula}
+                        `;
+                        row.appendChild(horarioCell);
+                    });
+
+                    horarioTableBody.appendChild(row);
+                });
+
+                horariosPorGrupoContainer.appendChild(grupoSection);
+            });
+
+
+
+
+        }
+
+        // Cargar los datos al iniciar la página
+        document.addEventListener('DOMContentLoaded', fetchAndDisplayData);
+
+        // Generar los horarios cuando se haga clic en el botón
+        document.getElementById('generateButton').addEventListener('click', generarHorarios);
+    </script>
+</body>
+</html>

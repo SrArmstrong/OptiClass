@@ -11,9 +11,9 @@ const data = [
 
 const Estadisticas = () => {
   return (
-    <div >     
+    <div style={{ marginLeft: '240px', padding: '20px' }}> {/* Ajusta el margen izquierdo */}
       
-      {/*navbar*/}
+      {/* navbar */}
       <aside className="sidebar">
         <h2>Menú</h2>
         <ul>
@@ -21,10 +21,10 @@ const Estadisticas = () => {
           <li>Horarios</li>
         </ul>
       </aside>
-
+  
       <Title level={2}>Estadísticas de Evaluación Docente</Title>
       <Text>Resumen de tus evaluaciones</Text>
-
+  
       <Row gutter={[16, 16]} style={{ marginTop: '20px' }}>
         {[...Array(5)].map((_, index) => (
           <Col xs={24} sm={12} md={8} lg={8} key={index}>
@@ -49,7 +49,7 @@ const Estadisticas = () => {
           </Col>
         ))}
       </Row>
-
+  
       <div style={{ marginTop: '20px', textAlign: 'center' }}>
         <Text strong style={{ fontSize: '16px' }}>
           Calificación Promedio del Profesor: <span style={{ fontWeight: 'bold' }}>80.0%</span>
@@ -60,6 +60,7 @@ const Estadisticas = () => {
       </div>
     </div>
   );
+  
 };
 
 export default Estadisticas;

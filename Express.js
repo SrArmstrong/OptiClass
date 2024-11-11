@@ -15,7 +15,7 @@ app.use(cors()); // Habilitar CORS
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '',
+  password: 'root',
   database: 'digitalmindworks'
 });
 
@@ -123,7 +123,53 @@ app.post('/register', (req, res) => {
   });
 });
 
+// Ruta para obtener los grupos desde la base de datos
+app.get('/datos', (req, res) => {
+  const query1 = `
+    SELECT 
+      a.nombre AS asignatura, 
+      e.nombre AS edificio, 
+      au.nombre AS aula, 
+      p.nombre AS profesor, 
+      p.appaterno, 
+      p.apmaterno, 
+      p.dias_trabajo, 
+      p.horainicio_trabajo, 
+      p.horafin_trabajo, 
+      p.calificación 
+    FROM 
+      asignaturas a 
+    LEFT JOIN 
+      profesores p ON CONVERT(a.nombre USING utf8mb4) = CONVERT(p.asignatura USING utf8mb4) 
+    LEFT JOIN 
+      aulas au ON p.id_profesor = au.id_aula 
+    LEFT JOIN 
+      edificios e ON au.id_edificio = e.id_edificio
+  `;
 
+  const query2 = `SELECT * FROM grupos`;
+
+  Promise.all([
+    new Promise((resolve, reject) => {
+      connection.query(query1, (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
+    }),
+    new Promise((resolve, reject) => {
+      connection.query(query2, (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
+    })
+  ])
+  .then(([results1, results2]) => {
+    res.json({ Profesores: results1, Grupos: results2 });
+  })
+  .catch(err => {
+    res.status(500).send('Error en la consulta');
+  });
+});
 
 
 // Ruta para mostrar usuarios

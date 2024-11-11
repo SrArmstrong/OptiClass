@@ -34,8 +34,12 @@ const LoginSignup = () => {
         const userData = data.userData;
         console.log('Datos del usuario:', userData);
   
-        // Redirigir a Horarios y pasar correo y tipo en la URL
-        navigate('/Horarios', { state: { correo: userData.correo, tipo: userData.tipo } });
+        // Redirigir según el tipo de usuario
+        if (userData.tipo === "1") {
+          navigate('/Horarios', { state: { correo: userData.correo, tipo: userData.tipo } });
+        } else if (userData.tipo === "2") {
+          navigate('/Profesores', { state: { correo: userData.correo, tipo: userData.tipo } });
+        }
       } else {
         alert(data.message); // Mostrar mensaje de error
       }
@@ -43,6 +47,7 @@ const LoginSignup = () => {
       console.error('Error during login:', error);
     }
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();

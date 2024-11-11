@@ -1,38 +1,22 @@
 // src/Horarios.js
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import './Horarios.css';  // Importa el archivo de estilos
+import './Horarios.css'; // Importa el archivo de estilos
 
 const Horarios = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { correo, tipo } = location.state || {};
 
-  // Validación de correo y tipo
   useEffect(() => {
     if (!correo || !tipo) {
-      // Si no hay correo o tipo es inválido, redirige al index 
       navigate('/');
     }
   }, [correo, tipo, navigate]);
 
   const [horarios, setHorarios] = useState([
-    { 
-      id: '1', 
-      grupo: '1', 
-      materia: 'Matemáticas', 
-      profesor: 'Profesor A', 
-      inicio: '2024-09-10T08:00:00', 
-      fin: '2024-09-10T08:50:00' 
-    },
-    { 
-      id: '2', 
-      grupo: '2', 
-      materia: 'Historia', 
-      profesor: 'Profesor B', 
-      inicio: '2024-09-10T09:00:00', 
-      fin: '2024-09-10T09:50:00' 
-    }
+    { id: '1', grupo: '1', materia: 'Matemáticas', profesor: 'Profesor A', inicio: '2024-09-10T08:00:00', fin: '2024-09-10T08:50:00' },
+    { id: '2', grupo: '2', materia: 'Historia', profesor: 'Profesor B', inicio: '2024-09-10T09:00:00', fin: '2024-09-10T09:50:00' }
   ]);
 
   const [newHorario, setNewHorario] = useState({
@@ -53,65 +37,103 @@ const Horarios = () => {
 
   return (
     <div className="horarios-container">
-
-
-
-      
-      {/*navbar*/}
       <aside className="sidebar">
-        <h2>Menú</h2>
+        <h2><b>Menú</b></h2>
         <ul>
-          <li>Encuesta de profesores</li>
-          <li>Horarios</li>
+          <li><b>Generar Horarios</b></li>
+          <li>Dar de alta profesores/alumnos</li>
+          <li>Administrar información de la escuela</li>
         </ul>
       </aside>
 
-
-
       <div className="horarios-content">
-        <h1>Horarios</h1>
-        <p>Correo: {correo}</p>
-        <p>Tipo: {tipo}</p>
-      
-        <ul id="horarios">
-          {horarios.map(horario => (
-            <li key={horario.id}>
-              Grupo: {horario.grupo} - Materia: {horario.materia} - Profesor: {horario.profesor} - Inicio: {new Date(horario.inicio).toLocaleTimeString()} - Fin: {new Date(horario.fin).toLocaleTimeString()}
-            </li>
-          ))}
-        </ul>
+        <div className="header-section">
 
-        <div id="agregar-horario">
-          <h2>Agregar Horario</h2>
-          <input
-            type="text"
-            placeholder="Profesor"
-            value={newHorario.profesor}
-            onChange={(e) => setNewHorario({ ...newHorario, profesor: e.target.value })}
-          />
-          <input
-            type="text"
-            placeholder="Materia"
-            value={newHorario.materia}
-            onChange={(e) => setNewHorario({ ...newHorario, materia: e.target.value })}
-          />
-          <input
-            type="text"
-            placeholder="Grupos"
-            value={newHorario.grupo}
-            onChange={(e) => setNewHorario({ ...newHorario, grupo: e.target.value })}
-          />
-          <input
-            type="datetime-local"
-            value={newHorario.inicio}
-            onChange={(e) => setNewHorario({ ...newHorario, inicio: e.target.value })}
-          />
-          <input
-            type="datetime-local"
-            value={newHorario.fin}
-            onChange={(e) => setNewHorario({ ...newHorario, fin: e.target.value })}
-          />
-          <button onClick={handleAddHorario}>Agregar</button>
+          <div className="header-box">
+            <div>
+              <h3>Análisis de valoración de profesores</h3>
+              <p>Última valoración de profesores realizado el: 10/09/24</p>
+            </div>
+            <button className="send-button">Enviar</button>
+          </div>
+
+          <div className="header-box">
+            <div>
+              <h3>Generación de Horarios</h3>
+              <p>Última generación realizado el: 10/09/24</p>
+            </div>            
+            <button className="send-button">Enviar</button>            
+          </div>
+
+        </div>
+
+        <div className=''>
+          <div className="calendars-section">
+            <div className="calendar-card"> {/* Calendario 1 */}                      
+              <table>
+                  <tr>
+                      <th>Hora</th>
+                      <th>Lunes</th>
+                      <th>Martes</th>
+                      <th>Miércoles</th>
+                      <th>Jueves</th>
+                      <th>Viernes</th>
+                  </tr>
+                  <tr>
+                      <td>5:00 - 6:00</td>
+                      <td>ADT</td>
+                      <td>Mate</td>
+                      <td>Metp</td>
+                      <td>Mate</td>
+                      <td>EDU</td>
+                  </tr>
+                  <tr>
+                      <td>6:00 - 7:00</td>
+                      <td>ADS</td>
+                      <td>ADT</td>
+                      <td>Mate</td>
+                      <td>ADS</td>
+                      <td>EDU</td>
+                  </tr>
+                  <tr>
+                      <td>7:00 - 8:00</td>
+                      <td>ADS</td>
+                      <td>Metp</td>
+                      <td>ADS</td>
+                      <td>SI</td>
+                      <td>SI</td>
+                  </tr>
+                  <tr>
+                      <td>8:00 - 9:00</td>
+                      <td>II</td>
+                      <td>II</td>
+                      <td>II</td>
+                      <td>II</td>
+                      <td>Mate</td>
+                  </tr>
+                  <tr>
+                      <td>9:00 - 10:00</td>
+                      <td>SI</td>
+                      <td>ADS</td>
+                      <td>EDU</td>
+                      <td>ADT</td>
+                      <td>Metp</td>
+                  </tr>
+              </table>
+            </div>
+            <div className="calendar-card"> {/* Calendario 2 */}
+              <img src="/calendar-placeholder.png" alt="Calendar 2" />
+            </div>
+            <div className="calendar-card"> {/* Calendario 3 */}
+              <img src="/calendar-placeholder.png" alt="Calendar 3" />
+            </div>
+          </div>
+          <button className="generate-button">Generar más Horarios</button>
+        </div>
+
+
+        <div className="send-schedule-section">
+          <button className="send-schedule-button">Enviar horarios a Profesores y Alumnos</button>
         </div>
       </div>
     </div>

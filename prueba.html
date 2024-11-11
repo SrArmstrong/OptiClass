@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Generador de Horarios</title>
+</head>
+<body>
+  <h2>Datos de Grupos</h2>
+  <ul id="listaGrupos"></ul>
+
+  <h2>Datos de Materias y Profesores</h2>
+  <ul id="listaMateriasProfesores"></ul>
+
+  <h2>Datos de Edificios y Aulas</h2>
+  <ul id="listaEdificiosAulas"></ul>
+
+  <button onclick="generarHorario()">Generar Horarios</button>
+  <div id="resultadoHorario"></div>
+
+  <script>
+    // Variables para almacenar los datos
+    const grupos = [];
+    const materiasProfesores = [];
+    const edificiosAulas = [];
+
+    // Función para obtener los datos del servidor
+    async function obtenerDatos() {
+      try {
+        const response = await fetch('http://localhost:3000/datos');
+        const datos = await response.json();
+
+        // Procesar los datos y agregar a las listas
+        datos.forEach((dato) => {
+          // Agregar grupo (en este caso asignatura)
+          if (!grupos.includes(dato.asignatura)) {
+            grupos.push(dato.asignatura);
+            document.getElementById('listaGrupos').innerHTML += `<li>${dato.asignatura}</li>`;
+          }
+
+          // Agregar materia y profesor
+          const materiaProfesor = {
+            materia: dato.asignatura,
+            profesor: `${dato.profesor} ${dato.appaterno} ${dato.apmaterno}`,
+            calificacion: dato.calificación
+          };
+          materiasProfesores.push(materiaProfesor);
+          document.getElementById('listaMateriasProfesores').innerHTML += `<li>${materiaProfesor.materia}, ${materiaProfesor.profesor}, Calificación: ${materiaProfesor.calificacion}</li>`;
+
+          // Agregar edificio y aula
+          const edificioAula = `${dato.edificio}: ${dato.aula}`;
+          if (!edificiosAulas.includes(edificioAula)) {
+            edificiosAulas.push(edificioAula);
+            document.getElementById('listaEdificiosAulas').innerHTML += `<li>${edificioAula}</li>`;
+          }
+        });
+      } catch (error) {
+        console.error('Error al obtener los datos:', error);
+      }
+    }
+
+    // Función para generar el horario (por ahora solo muestra los datos)
+    function generarHorario() {
+      let resultado = "<h3>Horarios Generados</h3>";
+      resultado += "<p>Datos de entrada:</p>";
+      resultado += `<strong>Grupos:</strong> ${grupos.join(", ")}<br>`;
+      resultado += `<strong>Materias y Profesores:</strong> ${JSON.stringify(materiasProfesores)}<br>`;
+      resultado += `<strong>Edificios y Aulas:</strong> ${JSON.stringify(edificiosAulas)}<br>`;
+      
+      // Aquí agregarías la lógica para generar el horario basado en las restricciones
+      
+      document.getElementById('resultadoHorario').innerHTML = resultado;
+    }
+
+    // Llamar a la función para obtener los datos al cargar la página
+    window.onload = obtenerDatos;
+  </script>
+</body>
+</html>
