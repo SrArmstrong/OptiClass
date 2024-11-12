@@ -5,8 +5,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginSignup from './Login_Sign/LoginSignup';
 import Profesores from './Profesores/Profesores';
 import Estadisticas from './Profesores/Estadisticas';
+import HorariosProf from './Profesores/Horarios';
 import Horarios from './Horarios/Horarios';
 import Alumnos from './Alumnos/encuesta';
+import RegistroProAl from './Horarios/RegistroProAl';
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
         <Route path="/horarios" element={<Horarios />} />
         <Route path="/alumnos" element={<Alumnos />} />
         <Route path="/estadisticas" element={<Estadisticas />} />
+        <Route path="/registroproal" element={<RegistroProAl />} />
+        <Route path="/horariosprof" element={<HorariosProf />} />
       </Routes>
     </Router>
   );
