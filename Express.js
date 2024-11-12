@@ -15,8 +15,8 @@ app.use(cors()); // Habilitar CORS
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  //password: 'root',
-  password: '',
+  password: 'root',
+  //password: '',
   database: 'digitalmindworks'
 });
 
@@ -101,12 +101,10 @@ app.post('/register/profesor', (req, res) => {
 app.post('/register/alumno', (req, res) => {
   const { correo, contrasenia, nombre, appaterno, apmaterno, grupo } = req.body;
 
-  // Verificar que todos los campos necesarios estén presentes
   if (!correo || !contrasenia || !nombre || !appaterno || !apmaterno || !grupo) {
     return res.status(400).json({ success: false, message: 'Todos los campos son obligatorios' });
   }
 
-  // Verificar si el correo ya está registrado
   const checkQuery = 'SELECT * FROM usuarios WHERE correo = ?';
   db.query(checkQuery, [correo], (err, result) => {
     if (err) {
@@ -114,15 +112,12 @@ app.post('/register/alumno', (req, res) => {
     }
 
     if (result.length > 0) {
-      // Si el correo ya está registrado
       return res.status(400).json({ success: false, message: 'El correo ya está registrado' });
     }
 
-    // Hash de la contraseña antes de guardarla
     const hashedPassword = md5(contrasenia);
-
-    // Insertar nuevo usuario como 'Alumno'
     const query = 'INSERT INTO usuarios (correo, contrasenia, tipo) VALUES (?, ?, ?)';
+
     db.query(query, [correo, hashedPassword, 3], (err, result) => {
       if (err) {
         return res.status(500).json({ success: false, message: 'Error en el servidor', error: err });
@@ -130,14 +125,28 @@ app.post('/register/alumno', (req, res) => {
 
       const newUserId = result.insertId;
 
-      // Insertar en la tabla 'alumnos'
-      const insertAlumnoQuery = 'INSERT INTO alumnos (nombre, appaterno, apmaterno, grupo, id_grupo, id_usuario) VALUES (?, ?, ?, NULL, NULL, NULL)';
-      db.query(insertAlumnoQuery, [nombre, appaterno, apmaterno, newUserId], (err, result) => {
+      // Recuperar el id_grupo basado en el nombre del grupo
+      const getGrupoIdQuery = 'SELECT id_grupo FROM grupos WHERE nombre = ?';
+      db.query(getGrupoIdQuery, [grupo], (err, grupoResult) => {
         if (err) {
-          return res.status(500).json({ success: false, message: 'Error en el servidor', error: err });
+          return res.status(500).json({ success: false, message: 'Error al recuperar el ID del grupo', error: err });
         }
 
-        res.status(201).json({ success: true, message: 'Alumno registrado con éxito' });
+        if (grupoResult.length === 0) {
+          return res.status(404).json({ success: false, message: 'Grupo no encontrado' });
+        }
+
+        const idGrupo = grupoResult[0].id_grupo;
+
+        // Insertar en la tabla 'alumnos' con el id_grupo recuperado
+        const insertAlumnoQuery = 'INSERT INTO alumnos (nombre, appaterno, apmaterno, grupo, id_grupo, id_usuario) VALUES (?, ?, ?, ?, ?, ?)';
+        db.query(insertAlumnoQuery, [nombre, appaterno, apmaterno, grupo, idGrupo, newUserId], (err, result) => {
+          if (err) {
+            return res.status(500).json({ success: false, message: 'Error en el servidor', error: err });
+          }
+
+          res.status(201).json({ success: true, message: 'Alumno registrado con éxito' });
+        });
       });
     });
   });
@@ -172,13 +181,13 @@ app.get('/datos', (req, res) => {
 
   Promise.all([
     new Promise((resolve, reject) => {
-      connection.query(query1, (err, results) => {
+      db.query(query1, (err, results) => {
         if (err) reject(err);
         else resolve(results);
       });
     }),
     new Promise((resolve, reject) => {
-      connection.query(query2, (err, results) => {
+      db.query(query2, (err, results) => {
         if (err) reject(err);
         else resolve(results);
       });
@@ -209,6 +218,70 @@ app.get('/usuarios', (req, res) => {
     });
   });
 });
+
+app.post('/guardarRespuestas', (req, res) => {
+  const { respuestas } = req.body;
+  const id_alumno = 1; // Por ahora, se asigna un valor estático
+  const id_profesor = 4; // Por ahora, se asigna un valor estático
+  const fecha_respuesta = new Date(); // Genera la fecha y hora actual
+
+  // Crear una consulta SQL para insertar cada respuesta
+  const queries = respuestas.map(({ pregunta_id, respuesta }) => {
+    return new Promise((resolve, reject) => {
+      const query = `
+        INSERT INTO formulario (id_alumno, id_profesor, pregunta_id, respuesta, fecha_respuesta)
+        VALUES (?, ?, ?, ?, ?)
+      `;
+      db.query(query, [id_alumno, id_profesor, pregunta_id, respuesta, fecha_respuesta], (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(result);
+      });
+    });
+  });
+
+  // Ejecutar todas las consultas en paralelo
+  Promise.all(queries)
+    .then((results) => {
+      res.status(201).json({ success: true, message: 'Respuestas guardadas con éxito' });
+    })
+    .catch((error) => {
+      console.error('Error detallado de MySQL:', error);
+      res.status(500).json({ success: false, message: 'Error al guardar respuestas', error: error.message });
+    });
+});
+
+// Nueva ruta para mostrar estadística de profesores
+app.get('/estadisticas', (req, res) => {
+  const query = `
+    SELECT 
+      p.id_profesor, 
+      p.nombre, 
+      p.appaterno, 
+      p.apmaterno, 
+      COALESCE(AVG(f.respuesta), 0) AS promedio_puntuacion
+    FROM profesores p
+    LEFT JOIN formulario f ON p.id_profesor = f.id_profesor
+    GROUP BY p.id_profesor
+    ORDER BY promedio_puntuacion DESC;
+  `;
+
+  db.query(query, (err, result) => {
+    if (err) {
+      console.error('Error en la consulta:', err);
+      return res.status(500).json({ success: false, message: 'Error en el servidor', error: err });
+    }
+
+    // Enviar el resultado como respuesta JSON
+    res.status(200).json({
+      success: true,
+      data: result
+    });
+  });
+});
+
+
 
 // Iniciar el servidor
 app.listen(port, () => {

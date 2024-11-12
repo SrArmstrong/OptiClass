@@ -41,7 +41,7 @@ const Horarios = () => {
         <h2><b>Menú</b></h2>
         <ul>
           <li><b>Generar Horarios</b></li>
-          <li>Dar de alta profesores/alumnos</li>
+          <li><a onClick={() => navigate('/registroproal')}>Dar de alta profesores/alumnos</a></li>
           <li>Administrar información de la escuela</li>
         </ul>
       </aside>

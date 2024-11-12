@@ -1,5 +1,5 @@
 // src/RegistrarAlumno.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Horarios.css'; // Mantiene los estilos de la sidebar
 
@@ -13,6 +13,9 @@ const RegistrarAlumno = () => {
     grupo: ''
   });
 
+  const [datos, setDatos] = useState(null); // Estado para almacenar datos de /datos}
+  const [grupos, setGrupos] = useState([]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -20,7 +23,7 @@ const RegistrarAlumno = () => {
       [name]: value
     });
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -42,6 +45,20 @@ const RegistrarAlumno = () => {
     }
   };
 
+  // Obtener los grupos al cargar el componente
+  useEffect(() => {
+    const fetchGrupos = async () => {
+      try {
+        const response = await axios.get('http://localhost:3001/datos'); // Cambia la URL si es necesario
+        setGrupos(response.data.Grupos); // Almacena los grupos en el estado
+      } catch (error) {
+        console.error('Error al obtener los grupos', error);
+      }
+    };
+
+    fetchGrupos();
+  }, []);
+
   return (
     <div className="horarios-container">
       <aside className="sidebar">
@@ -52,73 +69,161 @@ const RegistrarAlumno = () => {
           <li>Administrar Información de la Escuela</li>
         </ul>
       </aside>
+      
+      <div className='row'>
 
-      <div className="form-content">
-        <h3>Registrar Alumno</h3>
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label>Correo:</label>
-            <input
-              type="email"
-              name="correo"
-              value={formData.correo}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Contraseña:</label>
-            <input
-              type="password"
-              name="contrasenia"
-              value={formData.contrasenia}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Nombre:</label>
-            <input
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Apellido Paterno:</label>
-            <input
-              type="text"
-              name="appaterno"
-              value={formData.appaterno}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Apellido Materno:</label>
-            <input
-              type="text"
-              name="apmaterno"
-              value={formData.apmaterno}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Grupo:</label>
-            <input
-              type="text"
-              name="grupo"
-              value={formData.grupo}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <button type="submit">Registrar Alumno</button>
-        </form>
+        <div className="form-content">
+
+          <h1 style={{ textAlign: 'center' }}>Registrar Alumno</h1>
+
+          <form onSubmit={handleSubmit}>
+            <div>
+              <label>Correo:</label>
+              <input
+                type="email"
+                name="correo"
+                value={formData.correo}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label>Contraseña:</label>
+              <input
+                type="password"
+                name="contrasenia"
+                value={formData.contrasenia}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label>Nombre:</label>
+              <input
+                type="text"
+                name="nombre"
+                value={formData.nombre}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label>Apellido Paterno:</label>
+              <input
+                type="text"
+                name="appaterno"
+                value={formData.appaterno}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label>Apellido Materno:</label>
+              <input
+                type="text"
+                name="apmaterno"
+                value={formData.apmaterno}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label>Grupo:</label>
+              <select
+                name="grupo"
+                value={formData.grupo}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Selecciona un grupo</option>
+                {grupos.map((grupo) => (
+                  <option key={grupo.id_grupo} value={grupo.nombre}>
+                    {grupo.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button type="submit">Registrar Alumno</button>
+          </form>
+        </div>
+
+        <div className="form-content">
+
+          <h1 style={{ textAlign: 'center' }}>Registrar Profesor</h1>
+
+          <form onSubmit={handleSubmit}>
+            <div>
+              <label>Correo:</label>
+              <input
+                type="email"
+                name="correo"
+                value={formData.correo}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label>Contraseña:</label>
+              <input
+                type="password"
+                name="contrasenia"
+                value={formData.contrasenia}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label>Nombre:</label>
+              <input
+                type="text"
+                name="nombre"
+                value={formData.nombre}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label>Apellido Paterno:</label>
+              <input
+                type="text"
+                name="appaterno"
+                value={formData.appaterno}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label>Apellido Materno:</label>
+              <input
+                type="text"
+                name="apmaterno"
+                value={formData.apmaterno}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label>Grupo:</label>
+              <select
+                name="grupo"
+                value={formData.grupo}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Selecciona un grupo</option>
+                {grupos.map((grupo) => (
+                  <option key={grupo.id_grupo} value={grupo.nombre}>
+                    {grupo.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button type="submit">Registrar Profesor</button>
+          </form>
+        </div>
+
       </div>
+
     </div>
   );
 };
