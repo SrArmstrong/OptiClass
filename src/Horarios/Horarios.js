@@ -27,6 +27,8 @@ const Horarios = () => {
     fin: ''
   });
 
+  const [dataCache, setDataCache] = useState(null);
+
   const handleAddHorario = () => {
     setHorarios([
       ...horarios,
@@ -34,6 +36,62 @@ const Horarios = () => {
     ]);
     setNewHorario({ grupo: '', materia: '', profesor: '', inicio: '', fin: '' });
   };
+
+  const fetchAndDisplayData = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/datosPhorarios');
+      const data = await response.json();
+      setDataCache(data);
+    } catch (error) {
+      console.error('Error al obtener los datos:', error);
+    }
+  };
+
+  const generarHorarios = () => {
+    if (!dataCache) {
+      alert('Los datos no están disponibles. Por favor, recargue la página.');
+      return;
+    }
+
+    return dataCache.Grupos.map(grupo => (
+      <div key={grupo.id_grupo} className="grupo-section">
+        <h3>Horario para el Grupo: {grupo.nombre}</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Lunes</th>
+              <th>Martes</th>
+              <th>Miércoles</th>
+              <th>Jueves</th>
+              <th>Viernes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {["5:00 - 6:00", "6:00 - 7:00", "7:00 - 8:00", "8:00 - 9:00", "9:00 - 10:00"].map(horaIntervalo => (
+              <tr key={horaIntervalo}>
+                <td>{horaIntervalo}</td>
+                {["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"].map(dia => {
+                  const profesor = dataCache.Profesores[Math.floor(Math.random() * dataCache.Profesores.length)];
+                  return (
+                    <td key={dia}>
+                      <div><b>{profesor.asignatura || 'N/A'}</b></div>
+                      {profesor.profesor || 'N/A'} {profesor.appaterno || 'N/A'} {profesor.apmaterno || 'N/A'}<br />
+                      Edificio: {profesor.edificio || 'N/A'}, Aula: {profesor.aula || 'N/A'}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ));
+  };
+
+  useEffect(() => {
+    fetchAndDisplayData();
+  }, []);
 
   return (
     <div className="horarios-container">
@@ -48,7 +106,6 @@ const Horarios = () => {
 
       <div className="horarios-content">
         <div className="header-section">
-
           <div className="header-box">
             <div>
               <h3>Análisis de valoración de profesores</h3>
@@ -61,76 +118,17 @@ const Horarios = () => {
             <div>
               <h3>Generación de Horarios</h3>
               <p>Última generación realizado el: 10/09/24</p>
-            </div>            
-            <button className="send-button">Enviar</button>            
+            </div>
+            <button className="send-button">Enviar</button>
+            <button onClick={generarHorarios} className="generate-button">Generar Horarios</button>
           </div>
-
         </div>
 
-        <div className=''>
-          <div className="calendars-section">
-            <div className="calendar-card"> {/* Calendario 1 */}                      
-              <table>
-                  <tr>
-                      <th>Hora</th>
-                      <th>Lunes</th>
-                      <th>Martes</th>
-                      <th>Miércoles</th>
-                      <th>Jueves</th>
-                      <th>Viernes</th>
-                  </tr>
-                  <tr>
-                      <td>5:00 - 6:00</td>
-                      <td>ADT</td>
-                      <td>Mate</td>
-                      <td>Metp</td>
-                      <td>Mate</td>
-                      <td>EDU</td>
-                  </tr>
-                  <tr>
-                      <td>6:00 - 7:00</td>
-                      <td>ADS</td>
-                      <td>ADT</td>
-                      <td>Mate</td>
-                      <td>ADS</td>
-                      <td>EDU</td>
-                  </tr>
-                  <tr>
-                      <td>7:00 - 8:00</td>
-                      <td>ADS</td>
-                      <td>Metp</td>
-                      <td>ADS</td>
-                      <td>SI</td>
-                      <td>SI</td>
-                  </tr>
-                  <tr>
-                      <td>8:00 - 9:00</td>
-                      <td>II</td>
-                      <td>II</td>
-                      <td>II</td>
-                      <td>II</td>
-                      <td>Mate</td>
-                  </tr>
-                  <tr>
-                      <td>9:00 - 10:00</td>
-                      <td>SI</td>
-                      <td>ADS</td>
-                      <td>EDU</td>
-                      <td>ADT</td>
-                      <td>Metp</td>
-                  </tr>
-              </table>
-            </div>
-            <div className="calendar-card"> {/* Calendario 2 */}
-              <img src="/calendar-placeholder.png" alt="Calendar 2" />
-            </div>
-            <div className="calendar-card"> {/* Calendario 3 */}
-              <img src="/calendar-placeholder.png" alt="Calendar 3" />
-            </div>
+        <div className="calendars-section">
+          <div className="calendar-card">
+            {dataCache ? generarHorarios() : <p>Cargando datos...</p>}
           </div>
-          <button className="generate-button">Generar más Horarios</button>
         </div>
-
 
         <div className="send-schedule-section">
           <button className="send-schedule-button">Enviar horarios a Profesores y Alumnos</button>

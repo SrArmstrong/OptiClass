@@ -186,7 +186,7 @@
         // Función para obtener y mostrar los datos en las tablas
         async function fetchAndDisplayData() {
             try {
-                const response = await fetch('http://localhost:3000/datos'); // Endpoint del servidor
+                const response = await fetch('http://localhost:3001/datosPhorarios'); // Endpoint del servidor
                 const data = await response.json();
                 
                 dataCache = data; // Almacena los datos en cache para usarlos en la generación del horario

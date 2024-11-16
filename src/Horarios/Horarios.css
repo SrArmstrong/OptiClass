@@ -185,3 +185,90 @@ button[type="submit"]:hover {
   justify-content: space-around; /* Distribuye espacio entre los elementos */
   gap: 20px; /* Espacio entre formularios */
 }
+
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 8px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+th {
+  background-color: #f2f2f2;
+}
+#generateButton {
+  margin: 20px 0;
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+#generateButton:hover {
+  background-color: #45a049;
+}
+.grupo-section {
+  margin-bottom: 30px;
+}
+.grupo-section h3 {
+  margin-top: 0;
+}
+
+.horarios-container {
+  display: flex;
+}
+
+.sidebar {
+  width: 240px;
+  background: linear-gradient(to bottom, #66ccff, #66ffcc);
+  padding: 20px;
+  color: #fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+}
+
+.horarios-content {
+  margin-left: 260px; /* Ajusta el espacio para el sidebar */
+  padding: 20px;
+  width: calc(100% - 260px); /* Abarca el resto del ancho disponible */
+  overflow-y: auto; /* Permite desplazamiento si el contenido es extenso */
+  max-height: 100vh;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 8px;
+  text-align: center;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+.grupo-section {
+  margin-bottom: 30px;
+}
+
+#generateButton {
+  margin: 20px 0;
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#generateButton:hover {
+  background-color: #45a049;
+}

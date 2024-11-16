@@ -30,7 +30,7 @@ connection.connect((err) => {
 });
 
 // Ruta para obtener los grupos desde la base de datos
-app.get('/datos', (req, res) => {
+app.get('/datosPhorarios', (req, res) => {
   const query1 = `
     SELECT 
       a.nombre AS asignatura, 
