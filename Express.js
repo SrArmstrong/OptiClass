@@ -15,8 +15,8 @@ app.use(cors()); // Habilitar CORS
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  //password: 'root',
-  password: '',
+  password: 'root',
+  //password: '',
   database: 'digitalmindworks'
 });
 
@@ -268,11 +268,10 @@ app.get('/usuarios', (req, res) => {
 
 app.post('/guardarRespuestas', (req, res) => {
   const { respuestas } = req.body;
-  const id_alumno = 1; // Por ahora, se asigna un valor estático
-  const id_profesor = 4; // Por ahora, se asigna un valor estático
-  const fecha_respuesta = new Date(); // Genera la fecha y hora actual
+  const id_alumno = 1; // Valor estático
+  const id_profesor = 4; // Valor estático
+  const fecha_respuesta = new Date(); // Fecha actual
 
-  // Crear una consulta SQL para insertar cada respuesta
   const queries = respuestas.map(({ pregunta_id, respuesta }) => {
     return new Promise((resolve, reject) => {
       const query = `
@@ -281,23 +280,27 @@ app.post('/guardarRespuestas', (req, res) => {
       `;
       db.query(query, [id_alumno, id_profesor, pregunta_id, respuesta, fecha_respuesta], (err, result) => {
         if (err) {
-          return reject(err);
+          // Comprobamos si el error es de duplicado
+          if (err.code === 'ER_DUP_ENTRY') {
+            return reject(new Error('Ya se registraron calificaciones de ese profesor.'));
+          }
+          return reject(err); // Si es otro tipo de error, lo rechazamos normalmente
         }
         resolve(result);
       });
     });
   });
 
-  // Ejecutar todas las consultas en paralelo
   Promise.all(queries)
-    .then((results) => {
-      res.status(201).json({ success: true, message: 'Respuestas guardadas con éxito' });
+    .then(() => {
+      res.status(500).json({ success: true, message: 'Respuestas guardadas con éxito' });
     })
     .catch((error) => {
       console.error('Error detallado de MySQL:', error);
-      res.status(500).json({ success: false, message: 'Error al guardar respuestas', error: error.message });
+      res.status(201).json({ success: false, message: 'Error al guardar respuestas', error: error.message });
     });
 });
+
 
 // Nueva ruta para mostrar estadística de profesores
 app.get('/estadisticas', (req, res) => {
@@ -326,6 +329,80 @@ app.get('/estadisticas', (req, res) => {
       data: result
     });
   });
+});
+
+// Nueva ruta para mostrar estadística de profesores
+app.get('/estadistica', (req, res) => {
+  const query = `
+    SELECT 
+        p.id_profesor, 
+        p.nombre, 
+        p.appaterno, 
+        p.apmaterno, 
+        COALESCE(AVG(f.respuesta), 0) AS promedio_puntuacion
+    FROM profesores p
+    LEFT JOIN formulario f ON p.id_profesor = f.id_profesor
+    GROUP BY p.id_profesor
+    ORDER BY promedio_puntuacion DESC;
+  `;
+
+  db.query(query, (err, result) => {
+    if (err) {
+      console.error('Error en la consulta:', err);
+      return res.status(500).json({ success: false, message: 'Error en el servidor', error: err });
+    }
+
+    // Mostrar el resultado en la consola
+    console.log('Estadística de profesores:', result);
+
+    // Enviar el resultado como respuesta JSON
+    res.status(200).json({
+      success: true,
+      data: result
+    });
+  });
+});
+
+// Ruta para obtener los grupos desde la base de datos
+app.post('/resform', (req, res) => {
+  const { correo } = req.body;
+
+  if (!correo) {
+    return res.status(400).json({ error: 'El campo "correo" es requerido.' });
+  }
+
+  const query1 = `SELECT alumnos.id_alumno FROM usuarios INNER JOIN alumnos ON usuarios.id = alumnos.id_usuario WHERE usuarios.correo = ?`;
+  const query2 = `SELECT * FROM grupos`;
+
+  Promise.all([
+    new Promise((resolve, reject) => {
+      db.query(query1, [correo], (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
+    }),
+    new Promise((resolve, reject) => {
+      db.query(query2, (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
+    })
+  ])
+    .then(([results1, results2]) => {
+      // Verificamos si results1 contiene el id_alumno
+      const id_alumno = results1.length > 0 ? results1[0].id_alumno : null;
+
+      if (!id_alumno) {
+        return res.status(404).json({ error: 'Alumno no encontrado para el correo proporcionado.' });
+      }
+
+      // Respondemos con el id_alumno y los grupos
+      res.json({ id_alumno, Grupos: results2 });
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ error: 'Error en la consulta' });
+    });
 });
 
 

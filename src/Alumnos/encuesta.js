@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import './encuesta.css';
 
 function EncuestaProfesores() {
+  const location = useLocation();
+  const { correo, tipo } = location.state || {}; 
+
   const [respuestas, setRespuestas] = useState({
     criterioClase: '',
     terminaTiempo: '',
@@ -15,6 +19,33 @@ function EncuestaProfesores() {
     participacionEstudiantes: ''
   });
 
+  const [idAlumno, setIdAlumno] = useState(null); // Estado para almacenar el ID del alumno
+
+  useEffect(() => {
+    // Recuperar el `id_alumno` al montar el componente
+    const obtenerIdAlumno = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/resform', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ correo })
+        });
+        const data = await response.json();
+        if (data.id_alumno) {
+          setIdAlumno(data.id_alumno);
+        } else {
+          console.error('No se encontró el id_alumno en la respuesta:', data);
+        }
+      } catch (error) {
+        console.error('Error al recuperar el id_alumno:', error);
+      }
+    };
+
+    if (correo) {
+      obtenerIdAlumno();
+    }
+  }, [correo]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setRespuestas((prev) => ({ ...prev, [name]: value }));
@@ -22,7 +53,12 @@ function EncuestaProfesores() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
+    if (!idAlumno) {
+      alert('No se pudo recuperar el ID del alumno.');
+      return;
+    }
+
     const formattedRespuestas = [
       { pregunta_id: 1, respuesta: respuestas.criterioClase },
       { pregunta_id: 2, respuesta: respuestas.terminaTiempo },
@@ -35,18 +71,18 @@ function EncuestaProfesores() {
       { pregunta_id: 9, respuesta: respuestas.metodosEnseñanza },
       { pregunta_id: 10, respuesta: respuestas.participacionEstudiantes }
     ];
-  
+
     try {
       const response = await fetch('http://localhost:3001/guardarRespuestas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           respuestas: formattedRespuestas,
-          id_alumno: 1,  // Cambiar a un valor dinámico si es necesario
+          id_alumno: idAlumno,
           id_profesor: 1 // Cambiar a un valor dinámico si es necesario
         })
       });
-  
+
       const data = await response.json();
       if (data.success) {
         alert('Respuestas enviadas con éxito');
@@ -58,20 +94,25 @@ function EncuestaProfesores() {
       alert('Error al enviar respuestas');
     }
   };
-  
 
   return (
     <div className="encuesta-container">
       <aside className="sidebar">
-        <h2>Menú</h2>
+        <h1>Menú</h1>
         <ul>
           <li>Encuesta de profesores</li>
           <li>Horarios</li>
+          <li>
+            <p><strong>Correo:</strong> {correo}</p>
+          </li>
+          <li>
+            <p><strong>Tipo de Usuario:</strong> {tipo}</p>
+          </li>
         </ul>
       </aside>
 
       <div className="content">
-        <h1>Encuesta de Profesores</h1>
+        <h1 className='title'>Encuesta de Profesores</h1>
         <div className="profesor-info">
           <img src="https://via.placeholder.com/100" alt="Sofía García" className="profesor-foto" />
           <h2>Sofía García</h2>

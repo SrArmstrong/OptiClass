@@ -55,7 +55,7 @@ const Profesores = () => {
       
       {/*navbar*/}
       <aside className="sidebar">
-        <h2>Menú</h2>
+        <h1>Menú</h1>
         <ul>
           <li>Encuesta de profesores</li>
           <li>Horarios</li>
@@ -63,7 +63,7 @@ const Profesores = () => {
       </aside>
 
 
-      <h1>Profesores</h1>
+      <h1 className='title'>Profesores</h1>
       <ul>
         {profesores.map((profesor, index) => (
           <li key={index}>

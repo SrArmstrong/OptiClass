@@ -235,9 +235,9 @@ th {
 .horarios-content {
   margin-left: 260px; /* Ajusta el espacio para el sidebar */
   padding: 20px;
-  width: calc(100% - 260px); /* Abarca el resto del ancho disponible */
+  /*width: calc(100% - 260px); /* Abarca el resto del ancho disponible */
   overflow-y: auto; /* Permite desplazamiento si el contenido es extenso */
-  max-height: 100vh;
+  /*max-height: 100vh;*/
 }
 
 table {

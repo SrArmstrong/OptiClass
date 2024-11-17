@@ -96,7 +96,7 @@ const Horarios = () => {
   return (
     <div className="horarios-container">
       <aside className="sidebar">
-        <h2><b>Menú</b></h2>
+        <h1><b>Menú</b></h1>
         <ul>
           <li><b>Generar Horarios</b></li>
           <li><a onClick={() => navigate('/registroproal')}>Dar de alta profesores/alumnos</a></li>
@@ -105,6 +105,7 @@ const Horarios = () => {
       </aside>
 
       <div className="horarios-content">
+        <h1 className='title'> Generar Horarios </h1>
         <div className="header-section">
           <div className="header-box">
             <div>

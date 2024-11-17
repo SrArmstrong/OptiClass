@@ -35,10 +35,19 @@ const LoginSignup = () => {
         console.log('Datos del usuario:', userData);
   
         // Redirigir según el tipo de usuario
-        if (userData.tipo === "1") {
-          navigate('/Horarios', { state: { correo: userData.correo, tipo: userData.tipo } });
-        } else if (userData.tipo === "2") {
-          navigate('/Profesores', { state: { correo: userData.correo, tipo: userData.tipo } });
+        switch (userData.tipo) {
+          case "1":
+            navigate('/Horarios', { state: { correo: userData.correo, tipo: userData.tipo } });
+            break;
+          case "2":
+            navigate('/Profesores', { state: { correo: userData.correo, tipo: userData.tipo } });
+            break; 
+          case "3":
+            navigate('/Alumnos', { state: { correo: userData.correo, tipo: userData.tipo } });
+            break;
+          default:
+            alert('Tipo de usuario no reconocido');
+            break;
         }
       } else {
         alert(data.message); // Mostrar mensaje de error
@@ -47,6 +56,7 @@ const LoginSignup = () => {
       console.error('Error during login:', error);
     }
   };
+  
   
 
   const handleSubmit = async (e) => {

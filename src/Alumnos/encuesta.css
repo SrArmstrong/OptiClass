@@ -45,8 +45,7 @@ body {
   margin-left: 200px; /* Ajusta para dejar espacio para el menú fijo */
 }
 
-
-h1 {
+.title {
   text-align: center;
   color: #4caf50;
   font-size: 2em;
