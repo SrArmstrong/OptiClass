@@ -15,8 +15,8 @@ app.use(cors()); // Habilitar CORS
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: 'root',
-  //password: '',
+  //password: 'root',
+  password: '',
   database: 'digitalmindworks'
 });
 

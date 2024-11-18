@@ -14,28 +14,8 @@ const Horarios = () => {
     }
   }, [correo, tipo, navigate]);
 
-  const [horarios, setHorarios] = useState([
-    { id: '1', grupo: '1', materia: 'Matemáticas', profesor: 'Profesor A', inicio: '2024-09-10T08:00:00', fin: '2024-09-10T08:50:00' },
-    { id: '2', grupo: '2', materia: 'Historia', profesor: 'Profesor B', inicio: '2024-09-10T09:00:00', fin: '2024-09-10T09:50:00' }
-  ]);
-
-  const [newHorario, setNewHorario] = useState({
-    grupo: '',
-    materia: '',
-    profesor: '',
-    inicio: '',
-    fin: ''
-  });
-
   const [dataCache, setDataCache] = useState(null);
-
-  const handleAddHorario = () => {
-    setHorarios([
-      ...horarios,
-      { id: (horarios.length + 1).toString(), ...newHorario }
-    ]);
-    setNewHorario({ grupo: '', materia: '', profesor: '', inicio: '', fin: '' });
-  };
+  const [horarios, setHorarios] = useState(null);
 
   const fetchAndDisplayData = async () => {
     try {
@@ -53,40 +33,25 @@ const Horarios = () => {
       return;
     }
 
-    return dataCache.Grupos.map(grupo => (
-      <div key={grupo.id_grupo} className="grupo-section">
-        <h3>Horario para el Grupo: {grupo.nombre}</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Hora</th>
-              <th>Lunes</th>
-              <th>Martes</th>
-              <th>Miércoles</th>
-              <th>Jueves</th>
-              <th>Viernes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {["5:00 - 6:00", "6:00 - 7:00", "7:00 - 8:00", "8:00 - 9:00", "9:00 - 10:00"].map(horaIntervalo => (
-              <tr key={horaIntervalo}>
-                <td>{horaIntervalo}</td>
-                {["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"].map(dia => {
-                  const profesor = dataCache.Profesores[Math.floor(Math.random() * dataCache.Profesores.length)];
-                  return (
-                    <td key={dia}>
-                      <div><b>{profesor.asignatura || 'N/A'}</b></div>
-                      {profesor.profesor || 'N/A'} {profesor.appaterno || 'N/A'} {profesor.apmaterno || 'N/A'}<br />
-                      Edificio: {profesor.edificio || 'N/A'}, Aula: {profesor.aula || 'N/A'}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    ));
+    const nuevosHorarios = dataCache.Grupos.map(grupo => ({
+      id: grupo.id_grupo,
+      nombre: grupo.nombre,
+      horarios: ["5:00 - 6:00", "6:00 - 7:00", "7:00 - 8:00", "8:00 - 9:00", "9:00 - 10:00"].map(horaIntervalo => ({
+        hora: horaIntervalo,
+        dias: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"].map(dia => {
+          const profesor = dataCache.Profesores[Math.floor(Math.random() * dataCache.Profesores.length)];
+          return {
+            dia,
+            asignatura: profesor.asignatura || 'N/A',
+            profesor: `${profesor.profesor || 'N/A'} ${profesor.appaterno || 'N/A'} ${profesor.apmaterno || 'N/A'}`,
+            edificio: profesor.edificio || 'N/A',
+            aula: profesor.aula || 'N/A',
+          };
+        }),
+      })),
+    }));
+
+    setHorarios(nuevosHorarios);
   };
 
   useEffect(() => {
@@ -103,40 +68,66 @@ const Horarios = () => {
           <li>Administrar información de la escuela</li>
         </ul>
       </aside>
-
-      <div className="horarios-content">
-        <h1 className='title'> Generar Horarios </h1>
+  
+      <div className="columnas">
         <div className="header-section">
           <div className="header-box">
-            <div>
-              <h3>Análisis de valoración de profesores</h3>
-              <p>Última valoración de profesores realizado el: 10/09/24</p>
-            </div>
+            <h3>Análisis de valoración de profesores</h3>
+            <p>Última valoración de profesores realizado el: 10/09/24</p>
             <button className="send-button">Enviar</button>
           </div>
-
+  
           <div className="header-box">
-            <div>
-              <h3>Generación de Horarios</h3>
-              <p>Última generación realizado el: 10/09/24</p>
-            </div>
+            <h3>Generación de Horarios</h3>
+            <p>Última generación realizado el: 10/09/24</p>
             <button className="send-button">Enviar</button>
             <button onClick={generarHorarios} className="generate-button">Generar Horarios</button>
           </div>
         </div>
-
-        <div className="calendars-section">
-          <div className="calendar-card">
-            {dataCache ? generarHorarios() : <p>Cargando datos...</p>}
+  
+        <div className="horarios-content">
+          <div className="calendars-section">
+            {horarios ? (
+              horarios.map(grupo => (
+                <div key={grupo.id} className="grupo-section">
+                  <h3>Horario para el Grupo: {grupo.nombre}</h3>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Hora</th>
+                        <th>Lunes</th>
+                        <th>Martes</th>
+                        <th>Miércoles</th>
+                        <th>Jueves</th>
+                        <th>Viernes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {grupo.horarios.map(({ hora, dias }) => (
+                        <tr key={hora}>
+                          <td>{hora}</td>
+                          {dias.map(({ dia, asignatura, profesor, edificio, aula }) => (
+                            <td key={dia}>
+                              <div><b>{asignatura}</b></div>
+                              {profesor}<br />
+                              Edificio: {edificio}, Aula: {aula}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))
+            ) : (
+              <p>Cargando datos o haga clic en "Generar Horarios" para comenzar...</p>
+            )}
           </div>
-        </div>
-
-        <div className="send-schedule-section">
-          <button className="send-schedule-button">Enviar horarios a Profesores y Alumnos</button>
         </div>
       </div>
     </div>
   );
+  
 };
 
 export default Horarios;
