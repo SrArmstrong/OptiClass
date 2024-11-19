@@ -15,8 +15,8 @@ app.use(cors()); // Habilitar CORS
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  //password: 'root',
-  password: '',
+  password: 'root',
+  //password: '',
   database: 'digitalmindworks'
 });
 
@@ -201,6 +201,48 @@ app.get('/datos', (req, res) => {
   });
 });
 
+// Endpoint para guardar horarios
+app.post('/guardarHorarios', (req, res) => {
+  const horarios = req.body;
+
+  if (!horarios || horarios.length === 0) {
+    return res.status(400).send('No se recibieron horarios para guardar.');
+  }
+
+  // Construir las consultas de inserción
+  const queries = horarios.map(grupo => {
+    return grupo.horarios.flatMap(({ hora, dias }) =>
+      dias.map(({ dia, asignatura, profesor, edificio, aula }) => {
+        const [horaInicio, horaFin] = hora.split(' - ').map(h => `${h}:00`);
+        return `
+          INSERT INTO horarios (Grupo, Materia, profesor, aula, dia, hora_inicio, hora_fin)
+          VALUES (
+            '${grupo.nombre}',
+            '${asignatura}',
+            '${profesor}',
+            '${aula}',
+            '${dia}',
+            '${horaInicio}',
+            '${horaFin}'
+          );
+        `;
+      })
+    );
+  });
+
+  // Ejecutar las consultas
+  const sql = queries.flat().join('\n');
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error('Error al guardar horarios:', err);
+      res.status(500).send('Error al guardar horarios.');
+    } else {
+      res.send('Horarios guardados exitosamente.');
+    }
+  });
+});
+
 // Ruta para obtener los grupos desde la base de datos
 app.get('/datosPhorarios', (req, res) => {
   const query1 = `
@@ -267,38 +309,81 @@ app.get('/usuarios', (req, res) => {
 });
 
 app.post('/guardarRespuestas', (req, res) => {
-  const { respuestas } = req.body;
-  const id_alumno = 1; // Valor estático
-  const id_profesor = 4; // Valor estático
-  const fecha_respuesta = new Date(); // Fecha actual
+  const { id_profesor, id_alumno, respuestas } = req.body;
+  const fecha_respuesta = new Date();
 
-  const queries = respuestas.map(({ pregunta_id, respuesta }) => {
-    return new Promise((resolve, reject) => {
-      const query = `
-        INSERT INTO formulario (id_alumno, id_profesor, pregunta_id, respuesta, fecha_respuesta)
-        VALUES (?, ?, ?, ?, ?)
-      `;
-      db.query(query, [id_alumno, id_profesor, pregunta_id, respuesta, fecha_respuesta], (err, result) => {
-        if (err) {
-          // Comprobamos si el error es de duplicado
-          if (err.code === 'ER_DUP_ENTRY') {
-            return reject(new Error('Ya se registraron calificaciones de ese profesor.'));
+  if (!id_alumno || !id_profesor || !Array.isArray(respuestas) || respuestas.length === 0) {
+    return res.status(400).json({ success: false, message: 'Datos incompletos o inválidos' });
+  }
+
+  // Verificar si ya existen respuestas para el id_profesor e id_alumno
+  const verificarConsulta = `
+    SELECT COUNT(*) AS conteo
+    FROM formulario
+    WHERE id_profesor = ? AND id_alumno = ?
+  `;
+
+  db.query(verificarConsulta, [id_profesor, id_alumno], (err, results) => {
+    if (err) {
+      console.error('Error al verificar existencia:', err);
+      return res.status(500).json({ success: false, message: 'Error al verificar datos existentes' });
+    }
+
+    const { conteo } = results[0];
+    if (conteo > 0) {
+      // Si ya hay respuestas, no ejecutar el `queries`
+      return res.status(400).json({
+        success: false,
+        message: 'Ya existen respuestas registradas para este profesor y alumno.',
+      });
+    }
+
+    // Si no hay respuestas previas, realizar las inserciones
+    const queries = respuestas.map(({ pregunta_id, respuesta }) => {
+      return new Promise((resolve, reject) => {
+        const query = `
+          INSERT INTO formulario (id_alumno, id_profesor, pregunta_id, respuesta, fecha_respuesta)
+          VALUES (?, ?, ?, ?, ?)
+        `;
+        db.query(query, [id_alumno, id_profesor, pregunta_id, respuesta, fecha_respuesta], (err, result) => {
+          if (err) {
+            if (err.code === 'ER_DUP_ENTRY') {
+              return reject(new Error('Ya se registraron calificaciones de ese profesor.'));
+            }
+            return reject(err);
           }
-          return reject(err); // Si es otro tipo de error, lo rechazamos normalmente
-        }
-        resolve(result);
+          resolve(result);
+        });
       });
     });
-  });
 
-  Promise.all(queries)
-    .then(() => {
-      res.status(500).json({ success: true, message: 'Respuestas guardadas con éxito' });
-    })
-    .catch((error) => {
-      console.error('Error detallado de MySQL:', error);
-      res.status(201).json({ success: false, message: 'Error al guardar respuestas', error: error.message });
+    Promise.all(queries)
+      .then(() => {
+        res.status(200).json({ success: true, message: 'Respuestas guardadas con éxito' });
+      })
+      .catch((error) => {
+        console.error('Error detallado de MySQL:', error);
+        res.status(500).json({ success: false, message: 'Error al guardar respuestas', error: error.message });
+      });
+  });
+});
+
+
+// Ruta para mostrar datos de la tabla 'informe'
+app.get('/profesores', (req, res) => {
+  const query = 'SELECT * FROM profesores';  // Consulta SQL para obtener todos los registros de la tabla 'informe'
+
+  db.query(query, (err, result) => {
+    if (err) {
+      return res.status(500).json({ success: false, message: 'Error en el servidor', error: err });
+    }
+
+    // Envía la respuesta con los resultados formateados
+    res.status(200).json({
+      success: true,   // Indica que la operación fue exitosa
+      data: result     // Los datos de la tabla 'informe'
     });
+  });
 });
 
 
@@ -363,48 +448,32 @@ app.get('/estadistica', (req, res) => {
   });
 });
 
-// Ruta para obtener los grupos desde la base de datos
-app.post('/resform', (req, res) => {
+// Traer id del usuario
+app.post('/idusuario', (req, res) => {
   const { correo } = req.body;
 
   if (!correo) {
-    return res.status(400).json({ error: 'El campo "correo" es requerido.' });
+    return res.status(400).json({ success: false, message: 'Correo no proporcionado' });
   }
 
-  const query1 = `SELECT alumnos.id_alumno FROM usuarios INNER JOIN alumnos ON usuarios.id = alumnos.id_usuario WHERE usuarios.correo = ?`;
-  const query2 = `SELECT * FROM grupos`;
+  const query = 'SELECT a.id_alumno FROM alumnos a JOIN usuarios u ON a.id_usuario = u.id WHERE u.correo = ?';
 
-  Promise.all([
-    new Promise((resolve, reject) => {
-      db.query(query1, [correo], (err, results) => {
-        if (err) reject(err);
-        else resolve(results);
-      });
-    }),
-    new Promise((resolve, reject) => {
-      db.query(query2, (err, results) => {
-        if (err) reject(err);
-        else resolve(results);
-      });
-    })
-  ])
-    .then(([results1, results2]) => {
-      // Verificamos si results1 contiene el id_alumno
-      const id_alumno = results1.length > 0 ? results1[0].id_alumno : null;
+  db.query(query, [correo], (err, result) => {
+    if (err) {
+      console.error('Error en la consulta:', err);
+      return res.status(500).json({ success: false, message: 'Error en el servidor', error: err });
+    }
 
-      if (!id_alumno) {
-        return res.status(404).json({ error: 'Alumno no encontrado para el correo proporcionado.' });
-      }
+    if (result.length === 0) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    }
 
-      // Respondemos con el id_alumno y los grupos
-      res.json({ id_alumno, Grupos: results2 });
-    })
-    .catch(err => {
-      console.error(err);
-      res.status(500).json({ error: 'Error en la consulta' });
-    });
+    console.log('ID de Usuario:', result);
+
+    res.status(200).json(result[0].id_alumno // Devuelve solo el ID
+    );
+  });
 });
-
 
 
 // Iniciar el servidor

@@ -17,6 +17,33 @@ const Horarios = () => {
   const [dataCache, setDataCache] = useState(null);
   const [horarios, setHorarios] = useState(null);
 
+  const guardarHorarios = async () => {
+    if (!horarios) {
+      alert('No hay horarios generados para guardar. Por favor, genere los horarios primero.');
+      return;
+    }
+  
+    try {
+      const response = await fetch('http://localhost:3001/guardarHorarios', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(horarios),
+      });
+  
+      if (response.ok) {
+        alert('Horarios guardados exitosamente en la base de datos.');
+      } else {
+        console.error('Error al guardar los horarios en la base de datos.');
+      }
+    } catch (error) {
+      console.error('Error al intentar guardar los horarios:', error);
+    }
+  };
+  
+  
+
   const fetchAndDisplayData = async () => {
     try {
       const response = await fetch('http://localhost:3001/datosPhorarios');
@@ -80,7 +107,7 @@ const Horarios = () => {
           <div className="header-box">
             <h3>Generación de Horarios</h3>
             <p>Última generación realizado el: 10/09/24</p>
-            <button className="send-button">Enviar</button>
+            <button className="send-button" onClick={guardarHorarios}>Enviar</button>
             <button onClick={generarHorarios} className="generate-button">Generar Horarios</button>
           </div>
         </div>
