@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './encuesta.css';
 
 function EncuestaProfesores() {
+
+  const navigate = useNavigate();
+
   const location = useLocation();
   const { correo, tipo } = location.state || {}; 
 
@@ -153,7 +156,7 @@ function EncuestaProfesores() {
         <h1>Menú</h1>
         <ul>
           <li>Encuesta de profesores</li>
-          <li>Horarios</li>
+          <li><a onClick={() => navigate('/HorariosAlumnos', { state: { correo: correo, tipo: tipo } })}>Horarios</a></li>
           <li>
             <p><strong>Correo:</strong> {correo}</p>
           </li>

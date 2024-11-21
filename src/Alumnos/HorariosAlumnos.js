@@ -1,17 +1,34 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './HorariosTable.css'; // Estilos personalizados para la tabla
 
 const HorariosTable = () => {
+
+  const location = useLocation();
+  const { correo } = location.state || {}; // Recuperar el correo
+
   const [horarios, setHorarios] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    console.log('Correo recibido:', correo); // Para verificar que el correo se pasó correctamente
+  }, [correo]);
 
   // Función para obtener y mostrar los datos
   const fetchAndDisplayData = async () => {
     try {
-      const response = await fetch('http://localhost:3001/obtenerHorarios');
+      const response = await fetch('http://localhost:3001/obtenerHorarios', {
+        method: 'POST', // Cambiar a POST
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ correo }), // Incluir el correo en el cuerpo
+      });
+  
       if (!response.ok) {
         throw new Error('Error al obtener los datos del horario');
       }
+  
       const data = await response.json();
       setHorarios(data);
     } catch (error) {
@@ -20,6 +37,7 @@ const HorariosTable = () => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchAndDisplayData();

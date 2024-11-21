@@ -15,8 +15,8 @@ app.use(cors()); // Habilitar CORS
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  //password: 'root',
-  password: '',
+  password: 'root',
+  //password: '',
   database: 'digitalmindworks'
 });
 
@@ -248,7 +248,8 @@ app.get('/datosPhorarios', (req, res) => {
     SELECT 
       a.nombre AS asignatura, 
       e.nombre AS edificio, 
-      au.nombre AS aula, 
+      au.nombre AS aula,
+      p.id_profesor, 
       p.nombre AS profesor, 
       p.appaterno, 
       p.apmaterno, 
@@ -475,28 +476,64 @@ app.post('/idusuario', (req, res) => {
 });
 
 //Obtener horarios para alumnos/profesores
-app.get('/obtenerHorarios', (req, res) => {
-  const sql = `
+app.post('/obtenerHorarios', (req, res) => {
+  const { correo } = req.body;
+
+  if (!correo) {
+    return res.status(400).send('Correo no proporcionado.');
+  }
+
+  // Primera consulta para obtener el grupo basado en el correo
+  const sqlGrupo = `
     SELECT 
-      grupo, materia, profesor, aula, dia, 
-      TIME_FORMAT(hora_inicio, '%H:%i') AS hora_inicio, 
-      TIME_FORMAT(hora_fin, '%H:%i') AS hora_fin
-    FROM horario
-    ORDER BY grupo, dia, hora_inicio
+      alumnos.id_grupo AS grupo 
+    FROM 
+      alumnos 
+    JOIN 
+      usuarios 
+    ON 
+      alumnos.id_usuario = usuarios.id 
+    WHERE 
+      usuarios.correo = ?;
   `;
 
-  db.query(sql, (err, results) => {
+  db.query(sqlGrupo, [correo], (err, results) => {
     if (err) {
-      console.error('Error al obtener horarios:', err);
-      res.status(500).send('Error al obtener horarios.');
-    } else {
-      // Responde con los datos en formato JSON
-      res.json(results);
+      console.error('Error al obtener el grupo:', err);
+      return res.status(500).send('Error al obtener el grupo.');
     }
+
+    if (results.length === 0) {
+      return res.status(404).send('No se encontró un grupo para el correo proporcionado.');
+    }
+
+    const grupo = results[0].grupo;
+
+    // Segunda consulta para obtener los horarios del grupo
+    const sqlHorarios = `
+      SELECT 
+        grupo, materia, profesor, aula, dia, 
+        TIME_FORMAT(hora_inicio, '%H:%i') AS hora_inicio, 
+        TIME_FORMAT(hora_fin, '%H:%i') AS hora_fin
+      FROM 
+        horario
+      WHERE 
+        grupo = ?
+      ORDER BY 
+        grupo, dia, hora_inicio;
+    `;
+
+    db.query(sqlHorarios, [grupo], (err, horarios) => {
+      if (err) {
+        console.error('Error al obtener horarios:', err);
+        return res.status(500).send('Error al obtener horarios.');
+      }
+
+      // Responder con los horarios en formato JSON
+      res.json(horarios);
+    });
   });
 });
-
-
 
 // Iniciar el servidor
 app.listen(port, () => {
