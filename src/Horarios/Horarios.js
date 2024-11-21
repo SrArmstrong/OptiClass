@@ -29,13 +29,14 @@ const Horarios = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(horarios),
+        body: JSON.stringify(horarios), // Envía el objeto completo
       });
   
       if (response.ok) {
         alert('Horarios guardados exitosamente en la base de datos.');
       } else {
-        console.error('Error al guardar los horarios en la base de datos.');
+        const errorMessage = await response.text();
+        console.error('Error al guardar los horarios en la base de datos:', errorMessage);
       }
     } catch (error) {
       console.error('Error al intentar guardar los horarios:', error);

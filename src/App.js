@@ -8,6 +8,7 @@ import Estadisticas from './Profesores/Estadisticas';
 import HorariosProf from './Profesores/Horarios';
 import Horarios from './Horarios/Horarios';
 import Alumnos from './Alumnos/encuesta';
+import HorariosAlumnos from './Alumnos/HorariosAlumnos';
 import RegistroProAl from './Horarios/RegistroProAl';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/profesores" element={<Profesores />} />
         <Route path="/horarios" element={<Horarios />} />
         <Route path="/alumnos" element={<Alumnos />} />
+        <Route path="/horariosalumnos" element={<HorariosAlumnos />} />
         <Route path="/estadisticas" element={<Estadisticas />} />
         <Route path="/registroproal" element={<RegistroProAl />} />
         <Route path="/horariosprof" element={<HorariosProf />} />

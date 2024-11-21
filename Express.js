@@ -15,8 +15,8 @@ app.use(cors()); // Habilitar CORS
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: 'root',
-  //password: '',
+  //password: 'root',
+  password: '',
   database: 'digitalmindworks'
 });
 
@@ -209,31 +209,29 @@ app.post('/guardarHorarios', (req, res) => {
     return res.status(400).send('No se recibieron horarios para guardar.');
   }
 
-  // Construir las consultas de inserción
-  const queries = horarios.map(grupo => {
-    return grupo.horarios.flatMap(({ hora, dias }) =>
-      dias.map(({ dia, asignatura, profesor, edificio, aula }) => {
-        const [horaInicio, horaFin] = hora.split(' - ').map(h => `${h}:00`);
-        return `
-          INSERT INTO horarios (Grupo, Materia, profesor, aula, dia, hora_inicio, hora_fin)
-          VALUES (
-            '${grupo.nombre}',
-            '${asignatura}',
-            '${profesor}',
-            '${aula}',
-            '${dia}',
-            '${horaInicio}',
-            '${horaFin}'
-          );
-        `;
-      })
-    );
+  // Construcción de datos para la consulta
+  const values = [];
+  horarios.forEach(grupo => {
+    grupo.horarios.forEach(({ hora, dias }) => {
+      const [horaInicio, horaFin] = hora.split(' - ').map(h => `${h}:00`);
+      dias.forEach(({ dia, asignatura, profesor, aula }) => {
+        if (!asignatura || !profesor || !aula) return; // Validar datos
+        values.push([grupo.id, asignatura, profesor, aula, dia, horaInicio, horaFin]);
+      });
+    });
   });
 
-  // Ejecutar las consultas
-  const sql = queries.flat().join('\n');
+  if (values.length === 0) {
+    return res.status(400).send('No se generaron datos válidos para guardar.');
+  }
 
-  db.query(sql, (err, result) => {
+  // Consulta SQL
+  const sql = `
+    INSERT INTO horario (grupo, materia, profesor, aula, dia, hora_inicio, hora_fin)
+    VALUES ?;
+  `;
+
+  db.query(sql, [values], (err, result) => {
     if (err) {
       console.error('Error al guardar horarios:', err);
       res.status(500).send('Error al guardar horarios.');
@@ -242,6 +240,7 @@ app.post('/guardarHorarios', (req, res) => {
     }
   });
 });
+
 
 // Ruta para obtener los grupos desde la base de datos
 app.get('/datosPhorarios', (req, res) => {
@@ -474,6 +473,29 @@ app.post('/idusuario', (req, res) => {
     );
   });
 });
+
+//Obtener horarios para alumnos/profesores
+app.get('/obtenerHorarios', (req, res) => {
+  const sql = `
+    SELECT 
+      grupo, materia, profesor, aula, dia, 
+      TIME_FORMAT(hora_inicio, '%H:%i') AS hora_inicio, 
+      TIME_FORMAT(hora_fin, '%H:%i') AS hora_fin
+    FROM horario
+    ORDER BY grupo, dia, hora_inicio
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error al obtener horarios:', err);
+      res.status(500).send('Error al obtener horarios.');
+    } else {
+      // Responde con los datos en formato JSON
+      res.json(results);
+    }
+  });
+});
+
 
 
 // Iniciar el servidor
