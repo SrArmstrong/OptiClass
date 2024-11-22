@@ -60,54 +60,27 @@ const Horarios = () => {
       alert('Los datos no están disponibles. Por favor, recargue la página.');
       return;
     }
-  
-    const nuevosHorarios = dataCache.Grupos.map(grupo => {
-      // Determina un horario fijo para la materia "II"
-      const horaFija = "8:00 - 9:00"; // Ajusta la hora según sea necesario
-      const diasFijosII = ["Lunes", "Martes", "Miércoles", "Jueves"];
-      const asignaturaII = "II";
-  
-      // Lista de horarios disponibles
-      const horariosDisponibles = ["5:00 - 6:00", "6:00 - 7:00", "7:00 - 8:00", "8:00 - 9:00", "9:00 - 10:00"];
-  
-      // Generar horarios para el grupo
-      const horarios = horariosDisponibles.map(horaIntervalo => {
-        const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"].map(dia => {
-          // Si es un día fijo y el horario coincide con el fijo, asigna "II"
-          if (diasFijosII.includes(dia) && horaIntervalo === horaFija) {
-            const profesorII = dataCache.Profesores.find(prof => prof.asignatura === asignaturaII) || {};
-            return {
-              dia,
-              asignatura: asignaturaII,
-              profesor: `${profesorII.profesor || "Profesor II"} ${profesorII.appaterno || ""} ${profesorII.apmaterno || ""}`,
-              edificio: profesorII.edificio || "Edificio A",
-              aula: profesorII.aula || "101",
-            };
-          }
-  
-          // Para el resto de horarios y días, asigna otras materias
+
+    const nuevosHorarios = dataCache.Grupos.map(grupo => ({
+      id: grupo.id_grupo,
+      nombre: grupo.nombre,
+      horarios: ["5:00 - 6:00", "6:00 - 7:00", "7:00 - 8:00", "8:00 - 9:00", "9:00 - 10:00"].map(horaIntervalo => ({
+        hora: horaIntervalo,
+        dias: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"].map(dia => {
           const profesor = dataCache.Profesores[Math.floor(Math.random() * dataCache.Profesores.length)];
           return {
             dia,
-            asignatura: profesor.asignatura || "Asignatura General",
-            profesor: `${profesor.profesor || "N/A"} ${profesor.appaterno || "N/A"} ${profesor.apmaterno || "N/A"}`,
-            edificio: profesor.edificio || "N/A",
-            aula: profesor.aula || "N/A",
+            asignatura: profesor.asignatura || 'N/A',
+            profesor: `${profesor.profesor || 'N/A'} ${profesor.appaterno || 'N/A'} ${profesor.apmaterno || 'N/A'}`,
+            edificio: profesor.edificio || 'N/A',
+            aula: profesor.aula || 'N/A',
           };
-        });
-  
-        return { hora: horaIntervalo, dias };
-      });
-  
-      return { id: grupo.id_grupo, nombre: grupo.nombre, horarios };
-    });
-  
+        }),
+      })),
+    }));
+
     setHorarios(nuevosHorarios);
   };
-  
-  
-  
-  
 
   useEffect(() => {
     fetchAndDisplayData();
