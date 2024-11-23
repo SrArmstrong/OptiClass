@@ -1,17 +1,36 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './HorariosTable.css'; // Estilos personalizados para la tabla
 
 const HorariosTable = () => {
+
+  const navigate = useNavigate();
+
+  const location = useLocation();
+  const { correo, tipo } = location.state || {}; 
+
   const [horarios, setHorarios] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    console.log('Correo recibido:', correo); // Para verificar que el correo se pasó correctamente
+  }, [correo]);
 
   // Función para obtener y mostrar los datos
   const fetchAndDisplayData = async () => {
     try {
-      const response = await fetch('http://localhost:3001/obtenerHorarios');
+      const response = await fetch('http://localhost:3001/obtenerHorarios', {
+        method: 'POST', // Cambiar a POST
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ correo }), // Incluir el correo en el cuerpo
+      });
+  
       if (!response.ok) {
         throw new Error('Error al obtener los datos del horario');
       }
+  
       const data = await response.json();
       setHorarios(data);
     } catch (error) {
@@ -20,6 +39,7 @@ const HorariosTable = () => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchAndDisplayData();
@@ -50,6 +70,21 @@ const HorariosTable = () => {
 
   return (
     <div className="horarios-container">
+      
+      <aside className="sidebar">
+        <h1>Menú</h1>
+        <ul>
+          <li><a onClick={() => navigate('/Alumnos', { state: { correo: correo, tipo: tipo } })}>Encuesta de profesores</a></li>
+          <li><a onClick={() => navigate('/HorariosAlumnos', { state: { correo: correo, tipo: tipo } })}>Horarios</a></li>
+          <li>
+            <p><strong>Correo:</strong> {correo}</p>
+          </li>
+          <li>
+            <p><strong>Tipo de Usuario:</strong> {tipo}</p>
+          </li>
+        </ul>
+      </aside>
+
       {Object.keys(horariosPorGrupo).map((grupo) => (
         <div key={grupo} className="grupo-section">
           <h2>Horario para el Grupo: {grupo}</h2>

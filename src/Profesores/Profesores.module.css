@@ -1,0 +1,62 @@
+/* Contenedor del formulario con barra de desplazamiento */
+.content {
+    max-height: 500px; /* Ajusta la altura máxima según el diseño */
+    overflow-y: auto; /* Activa la barra de desplazamiento vertical */
+    padding-right: 10px; /* Espacio para la scrollbar */
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espaciado entre los elementos */
+}
+
+/* Contenedor para los días y las horas con barra de desplazamiento */
+.inputScrollContainer {
+    max-height: 350px; /* Limitar la altura para que se desplaze */
+    overflow-y: auto; /* Solo desplazarse en el eje Y */
+    padding-right: 10px; /* Espacio para la scrollbar */
+}
+
+/* Sección del formulario */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espaciado entre los elementos del formulario */
+}
+
+/* Contenedores de días y horas */
+.dia-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+    padding: 5px;
+}
+
+/* Estilo de los checkboxes */
+.dia-container label {
+    margin: 5px 0;
+}
+
+/* Estilo del botón */
+button {
+    background-color: #FF5722; /* Color naranja original */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px; /* Espacio encima del botón */
+}
+
+button:hover {
+    background-color: #E64A19; /* Efecto hover con tono más oscuro de naranja */
+}
+
+/* Ajustar los elementos para evitar desbordamiento */
+input[type="checkbox"], input[type="time"] {
+    margin-right: 10px; /* Espaciado en la derecha */
+}
+
+/* Opcional: agregar bordes suaves o fondo para mejorar la estética */
+.dia-container, .hora-container {
+    border: 1px solid #FF5722; /* Borde naranja */
+    border-radius: 5px;
+    padding: 10px;
+}

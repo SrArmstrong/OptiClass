@@ -1,77 +1,106 @@
 .horarios-container {
-    display: flex;
-    flex-direction: row;
-    height: 100vh;
-    overflow: hidden;
-  }
-  
-  .sidebar {
-    flex: 0 0 250px; /* Ajusta el ancho fijo del aside */
-    background-color: #f4f4f4;
-    padding: 20px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    height: 100%;
-  }
-  
-  .columnas {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto; /* Permite el scroll si el contenido supera el espacio */
-  }
-  
-  .header-section {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-  }
-  
-  .header-box {
-    background: #ffffff;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    flex: 1;
-  }
-  
-  .horarios-content {
-    margin-top: 20px;
-  }
-  
-  .calendars-section {
-    margin-top: 20px;
-  }
-  
-  .grupo-section {
-    margin-bottom: 20px;
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    font-size: 12px; /* Ajuste de tamaño para hacer la tabla más pequeña */
-    overflow-x: auto; /* Esto habilita el scroll horizontal */
-  }
-  
-  th, td {
-    border: 1px solid #ddd;
-    padding: 6px; /* Menor padding para hacer las celdas más pequeñas */
-    text-align: center;
-  }
-  
-  th {
-    background-color: #f4f4f4;
-    font-size: 13px; /* Ajuste para que los encabezados sean más pequeños */
-  }
-  
-  td div {
-    text-align: left;
-    font-size: 12px; /* Tamaño más pequeño para el contenido dentro de las celdas */
-  }
-  
-  .horarios-table-container {
-    overflow-x: auto; /* Activar scrollbar horizontal para la tabla */
-    -webkit-overflow-scrolling: touch; /* Mejora la experiencia en dispositivos táctiles */
-  }
-  
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+.sidebar {
+  flex: 0 0 250px;
+  background-color: #3a3f51;
+  padding: 20px;
+  color: #fff;
+  height: 100%;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h1 {
+  font-size: 1.5em;
+  margin-bottom: 1em;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar ul li {
+  margin: 1em 0;
+}
+
+.sidebar ul li a {
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.sidebar ul li a:hover {
+  color: #f0a500;
+}
+
+.horarios-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 10px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+  font-size: 13px;
+}
+
+th {
+  background-color: #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+tbody tr:hover {
+  background-color: #f1f1f1;
+  transition: background-color 0.3s;
+}
+
+td div {
+  text-align: left;
+}
+
+td p {
+  margin: 5px 0;
+}
+
+.grupo-section {
+  margin-bottom: 30px;
+}
+
+.horarios-table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.horarios-table-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.horarios-table-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

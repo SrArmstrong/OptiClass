@@ -3,34 +3,46 @@ import { Typography, Row, Col } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
-//import './Estadistica.css';
 
 const { Title, Text } = Typography;
 
 const Estadisticas = () => {
-  const location = useLocation();
+
   const navigate = useNavigate();
+
+  const location = useLocation();
+  
   const { correo, tipo } = location.state || {};
   const [profesores, setProfesores] = useState([]);
 
   useEffect(() => {
     axios
-      .get('http://localhost:3001/estadistica')
+      .get('http://localhost:3001/estadistica', {
+        params: { correo }, // Enviar el correo como parámetro
+      })
       .then((response) => {
         setProfesores(response.data.data);
       })
       .catch((error) => {
         console.error('Error al obtener los datos de la API:', error);
       });
-  }, []);
+  }, [correo]);
+  
 
   return (
     <div className="estadisticas-container">
       <aside className="sidebar">
-        <h2>Menú</h2>
+        <h1>Menú</h1>
         <ul>
-          <li>Encuesta de profesores</li>
-          <li>Horarios</li>
+          <li><a onClick={() => navigate('/Estadisticas', { state: { correo: correo, tipo: tipo } })}>Estadísticas</a></li>
+          <li><a onClick={() => navigate('/Profesores', { state: { correo: correo, tipo: tipo } })}>Preferencias</a></li>
+          <li><a onClick={() => navigate('/HorariosProfesores', { state: { correo: correo, tipo: tipo } })}>Horarios</a></li>
+          <li>
+            <p><strong>Correo:</strong> {correo}</p>
+          </li>
+          <li>
+            <p><strong>Tipo de Usuario:</strong> {tipo}</p>
+          </li>
         </ul>
       </aside>
 
@@ -61,16 +73,16 @@ const Estadisticas = () => {
                   <Text strong style={{ fontSize: '14px' }}>
                     {profesor.nombre} {profesor.appaterno} {profesor.apmaterno}
                   </Text>
-                  <ResponsiveContainer width={160} height={160}>
+                  <ResponsiveContainer width={500} height={500}> {/* Aumenta el tamaño del contenedor */}
                     <PieChart>
                       <Pie
                         data={data}
                         dataKey="value"
                         cx="50%"
                         cy="50%"
-                        innerRadius={40}
-                        outerRadius={60}
-                        paddingAngle={5}
+                        innerRadius={0} // Incrementa el radio interno
+                        outerRadius={140} // Incrementa el radio externo
+                        //paddingAngle={5}
                       >
                         {data.map((entry, idx) => (
                           <Cell key={`cell-${idx}`} fill={colors[idx]} />
@@ -87,11 +99,12 @@ const Estadisticas = () => {
                       color: '#555',
                     }}
                   >
-                    Promedio: {promedio ? promedio : 'No disponible'} / 10
+                    <b>Promedio: </b>{promedio ? promedio : 'No disponible'} / 10
                   </Text>
                 </div>
               </Col>
             );
+            
           })}
         </Row>
       </div>

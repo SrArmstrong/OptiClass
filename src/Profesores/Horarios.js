@@ -1,6 +1,7 @@
 import React from 'react';
 import { Table, Select,Button, Typography } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
+import './Profesores.css'; // Estilos personalizados para la tabla
 
 
 const { Title, Text } = Typography;

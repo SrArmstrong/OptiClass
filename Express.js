@@ -15,8 +15,8 @@ app.use(cors()); // Habilitar CORS
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  //password: 'root',
-  password: '',
+  password: 'root',
+  //password: '',
   database: 'digitalmindworks'
 });
 
@@ -248,7 +248,8 @@ app.get('/datosPhorarios', (req, res) => {
     SELECT 
       a.nombre AS asignatura, 
       e.nombre AS edificio, 
-      au.nombre AS aula, 
+      au.nombre AS aula,
+      p.id_profesor, 
       p.nombre AS profesor, 
       p.appaterno, 
       p.apmaterno, 
@@ -385,67 +386,51 @@ app.get('/profesores', (req, res) => {
   });
 });
 
-
 // Nueva ruta para mostrar estadística de profesores
-app.get('/estadisticas', (req, res) => {
+app.get('/estadistica', (req, res) => {
+  const { correo } = req.query; // Obtener el correo desde los parámetros
+
+  if (!correo) {
+    return res.status(400).json({
+      success: false,
+      message: 'El correo es requerido',
+    });
+  }
+
   const query = `
-    SELECT 
-      p.id_profesor, 
-      p.nombre, 
-      p.appaterno, 
-      p.apmaterno, 
+    SELECT
+      p.id_profesor,
+      p.nombre,
+      p.appaterno,
+      p.apmaterno,
       COALESCE(AVG(f.respuesta), 0) AS promedio_puntuacion
     FROM profesores p
     LEFT JOIN formulario f ON p.id_profesor = f.id_profesor
+    INNER JOIN usuarios u ON p.id_usuario = u.id
+    WHERE u.correo = ? 
     GROUP BY p.id_profesor
     ORDER BY promedio_puntuacion DESC;
   `;
 
-  db.query(query, (err, result) => {
+  db.query(query, [correo], (err, result) => { // Pasar el correo como parámetro
     if (err) {
       console.error('Error en la consulta:', err);
-      return res.status(500).json({ success: false, message: 'Error en el servidor', error: err });
+      return res.status(500).json({
+        success: false,
+        message: 'Error en el servidor',
+        error: err,
+      });
     }
 
-    // Enviar el resultado como respuesta JSON
-    res.status(200).json({
-      success: true,
-      data: result
-    });
-  });
-});
-
-// Nueva ruta para mostrar estadística de profesores
-app.get('/estadistica', (req, res) => {
-  const query = `
-    SELECT 
-        p.id_profesor, 
-        p.nombre, 
-        p.appaterno, 
-        p.apmaterno, 
-        COALESCE(AVG(f.respuesta), 0) AS promedio_puntuacion
-    FROM profesores p
-    LEFT JOIN formulario f ON p.id_profesor = f.id_profesor
-    GROUP BY p.id_profesor
-    ORDER BY promedio_puntuacion DESC;
-  `;
-
-  db.query(query, (err, result) => {
-    if (err) {
-      console.error('Error en la consulta:', err);
-      return res.status(500).json({ success: false, message: 'Error en el servidor', error: err });
-    }
-
-    // Mostrar el resultado en la consola
     console.log('Estadística de profesores:', result);
 
-    // Enviar el resultado como respuesta JSON
     res.status(200).json({
       success: true,
-      data: result
+      data: result,
     });
   });
 });
+
 
 // Traer id del usuario
 app.post('/idusuario', (req, res) => {
@@ -474,28 +459,94 @@ app.post('/idusuario', (req, res) => {
   });
 });
 
-//Obtener horarios para alumnos/profesores-
-app.get('/obtenerHorarios', (req, res) => {
-  const sql = `
+//Obtener horarios para alumnos/profesores
+app.post('/obtenerHorarios', (req, res) => {
+  const { correo } = req.body;
+
+  if (!correo) {
+    return res.status(400).send('Correo no proporcionado.');
+  }
+
+  // Primera consulta para obtener el grupo basado en el correo
+  const sqlGrupo = `
     SELECT 
-      grupo, materia, profesor, aula, dia, 
-      TIME_FORMAT(hora_inicio, '%H:%i') AS hora_inicio, 
-      TIME_FORMAT(hora_fin, '%H:%i') AS hora_fin
-    FROM horario
-    ORDER BY grupo, dia, hora_inicio
+      alumnos.id_grupo AS grupo 
+    FROM 
+      alumnos 
+    JOIN 
+      usuarios 
+    ON 
+      alumnos.id_usuario = usuarios.id 
+    WHERE 
+      usuarios.correo = ?;
   `;
 
-  db.query(sql, (err, results) => {
+  db.query(sqlGrupo, [correo], (err, results) => {
     if (err) {
-      console.error('Error al obtener horarios:', err);
-      res.status(500).send('Error al obtener horarios.');
-    } else {
-      // Responde con los datos en formato JSON
-      res.json(results);
+      console.error('Error al obtener el grupo:', err);
+      return res.status(500).send('Error al obtener el grupo.');
     }
+
+    if (results.length === 0) {
+      return res.status(404).send('No se encontró un grupo para el correo proporcionado.');
+    }
+
+    const grupo = results[0].grupo;
+
+    // Segunda consulta para obtener los horarios del grupo
+    const sqlHorarios = `
+      SELECT 
+        grupo, materia, profesor, aula, dia, 
+        TIME_FORMAT(hora_inicio, '%H:%i') AS hora_inicio, 
+        TIME_FORMAT(hora_fin, '%H:%i') AS hora_fin
+      FROM 
+        horario
+      WHERE 
+        grupo = ?
+      ORDER BY 
+        grupo, dia, hora_inicio;
+    `;
+
+    db.query(sqlHorarios, [grupo], (err, horarios) => {
+      if (err) {
+        console.error('Error al obtener horarios:', err);
+        return res.status(500).send('Error al obtener horarios.');
+      }
+
+      // Responder con los horarios en formato JSON
+      res.json(horarios);
+    });
   });
 });
 
+// Endpoint para guardar peticiones
+app.post('/guardarPeticiones', (req, res) => {
+  const { id_profesor, diasDisponibles, horasTrabajo, tiempo_completo, fecha_peticion } = req.body;
+
+  // Validar datos requeridos
+  if (!id_profesor || !diasDisponibles || !horasTrabajo || typeof tiempo_completo !== 'boolean' || !fecha_peticion) {
+    return res.status(400).send({ message: 'Datos incompletos o inválidos.' });
+  }
+
+  // Consulta SQL para insertar la petición
+  const sql = `
+    INSERT INTO peticiones (correo, dias_disponibles, horas_trabajo, tiempo_completo, fecha_peticion)
+    VALUES (?, ?, ?, ?, ?);
+  `;
+
+  // Ejecutar la consulta
+  db.query(
+    sql,
+    [id_profesor, diasDisponibles, horasTrabajo, tiempo_completo, fecha_peticion],
+    (err, result) => {
+      if (err) {
+        console.error('Error al guardar la petición:', err);
+        return res.status(500).send({ message: 'Error al guardar la petición.' });
+      }
+      res.send({ message: 'Petición guardada exitosamente.' });
+    }
+  );
+});
 
 
 // Iniciar el servidor

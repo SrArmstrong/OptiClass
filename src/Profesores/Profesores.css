@@ -1,10 +1,106 @@
+.horarios-container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
 .sidebar {
-    width: 240px;
-    background: linear-gradient(to bottom, #66ccff, #66ffcc);
-    padding: 20px;
-    color: #fff;
-    position: fixed; /* Hace que el menú se quede fijo */
-    top: 0; /* Ajusta para que se quede al inicio de la página */
-    left: 0; /* Asegura que esté pegado al borde izquierdo */
-    height: 100vh; /* Hace que ocupe toda la altura de la pantalla */
-  }
+  flex: 0 0 250px;
+  background-color: #3a3f51;
+  padding: 20px;
+  color: #fff;
+  height: 100%;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h1 {
+  font-size: 1.5em;
+  margin-bottom: 1em;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar ul li {
+  margin: 1em 0;
+}
+
+.sidebar ul li a {
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.sidebar ul li a:hover {
+  color: #f0a500;
+}
+
+.horarios-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 10px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+  font-size: 13px;
+}
+
+th {
+  background-color: #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+tbody tr:hover {
+  background-color: #f1f1f1;
+  transition: background-color 0.3s;
+}
+
+td div {
+  text-align: left;
+}
+
+td p {
+  margin: 5px 0;
+}
+
+.grupo-section {
+  margin-bottom: 30px;
+}
+
+.horarios-table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.horarios-table-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.horarios-table-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

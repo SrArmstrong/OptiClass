@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './encuesta.css';
 
 function EncuestaProfesores() {
+
+  const navigate = useNavigate();
+
   const location = useLocation();
   const { correo, tipo } = location.state || {}; 
 
@@ -152,8 +155,8 @@ function EncuestaProfesores() {
       <aside className="sidebar">
         <h1>Menú</h1>
         <ul>
-          <li>Encuesta de profesores</li>
-          <li>Horarios</li>
+          <li><a onClick={() => navigate('/Alumnos', { state: { correo: correo, tipo: tipo } })}>Encuesta de profesores</a></li>
+          <li><a onClick={() => navigate('/HorariosAlumnos', { state: { correo: correo, tipo: tipo } })}>Horarios</a></li>
           <li>
             <p><strong>Correo:</strong> {correo}</p>
           </li>

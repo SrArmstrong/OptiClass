@@ -1,34 +1,63 @@
 import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Profesores = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { correo, tipo } = location.state || {};
+
   const [profesores, setProfesores] = useState([]);
   const [newProfesor, setNewProfesor] = useState({
     nombre: '',
     materias: '',
     grupo: '',
-    diasDisponibles: [], // Para seleccionar los días de trabajo
-    horasTrabajo: {}, // Para ingresar las horas de trabajo por día
-    tiempo_completo: false
+    diasDisponibles: [],
+    horasTrabajo: {},
+    tiempo_completo: false,
+    medio_tiempo: false,
   });
 
   const handleAddProfesor = async () => {
+    if (
+      (!newProfesor.tiempo_completo && !newProfesor.medio_tiempo) &&
+      newProfesor.diasDisponibles.length === 0
+    ) {
+      alert('Debe seleccionar al menos un día o elegir Tiempo Completo o Medio Tiempo');
+      return;
+    }
+
     try {
-      const response = await fetch('http://localhost:3001/api/profesores', {
+      const response = await fetch('http://localhost:3001/guardarPeticiones', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newProfesor)
+        body: JSON.stringify({
+          id_profesor: correo,
+          diasDisponibles: JSON.stringify(newProfesor.diasDisponibles),
+          horasTrabajo: JSON.stringify(newProfesor.horasTrabajo),
+          tiempo_completo: newProfesor.tiempo_completo,
+          fecha_peticion: new Date().toISOString().slice(0, 19).replace("T", " "),
+        }),
       });
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-  
+
       const data = await response.json();
       console.log(data.message);
+
       setProfesores([...profesores, newProfesor]);
-      setNewProfesor({ nombre: '', materias: '', grupo: '', diasDisponibles: [], horasTrabajo: {}, tiempo_completo: false });
+      setNewProfesor({
+        nombre: '',
+        materias: '',
+        grupo: '',
+        diasDisponibles: [],
+        horasTrabajo: {},
+        tiempo_completo: false,
+        medio_tiempo: false,
+      });
     } catch (error) {
       console.error('Error:', error);
     }
@@ -43,98 +72,143 @@ const Profesores = () => {
     });
   };
 
-  const handleHorasChange = (dia, horas) => {
+  const handleHoraInicioChange = (dia, horaInicio) => {
     setNewProfesor((prevState) => {
-      const horasTrabajo = { ...prevState.horasTrabajo, [dia]: horas };
+      const horasTrabajo = {
+        ...prevState.horasTrabajo,
+        [dia]: { ...prevState.horasTrabajo[dia], inicio: horaInicio },
+      };
       return { ...prevState, horasTrabajo };
     });
   };
 
+  const handleHoraFinChange = (dia, horaFin) => {
+    setNewProfesor((prevState) => {
+      const horasTrabajo = {
+        ...prevState.horasTrabajo,
+        [dia]: { ...prevState.horasTrabajo[dia], fin: horaFin },
+      };
+      return { ...prevState, horasTrabajo };
+    });
+  };
+
+  const handleTiempoCompletoChange = () => {
+    setNewProfesor((prevState) => {
+      const diasDisponibles = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+      const horasTrabajo = diasDisponibles.reduce((acc, dia) => {
+        acc[dia] = { inicio: '08:00', fin: '13:00' };
+        return acc;
+      }, {});
+
+      return {
+        ...prevState,
+        tiempo_completo: !prevState.tiempo_completo,
+        medio_tiempo: false,
+        diasDisponibles: !prevState.tiempo_completo ? [] : diasDisponibles,
+        horasTrabajo: !prevState.tiempo_completo ? {} : horasTrabajo,
+      };
+    });
+  };
+
+  const handleMedioTiempoChange = () => {
+    setNewProfesor((prevState) => {
+      const diasDisponibles = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+      const horasTrabajo = diasDisponibles.reduce((acc, dia) => {
+        acc[dia] = { inicio: '08:00', fin: '10:00' };
+        return acc;
+      }, {});
+
+      return {
+        ...prevState,
+        medio_tiempo: !prevState.medio_tiempo,
+        tiempo_completo: false,
+        diasDisponibles: !prevState.medio_tiempo ? [] : diasDisponibles,
+        horasTrabajo: !prevState.medio_tiempo ? {} : horasTrabajo,
+      };
+    });
+  };
+
   return (
-    <div>
-      
-      {/*navbar*/}
+    <div className="container">
       <aside className="sidebar">
         <h1>Menú</h1>
         <ul>
-          <li>Encuesta de profesores</li>
-          <li>Horarios</li>
+          <li><a onClick={() => navigate('/Estadisticas', { state: { correo, tipo } })}>Estadísticas</a></li>
+          <li><a onClick={() => navigate('/Profesores', { state: { correo, tipo } })}>Preferencias</a></li>
+          <li><a onClick={() => navigate('/HorariosProfesores', { state: { correo, tipo } })}>Horarios</a></li>
+          <li>
+            <p><strong>Correo:</strong> {correo}</p>
+          </li>
+          <li>
+            <p><strong>Tipo de Usuario:</strong> {tipo}</p>
+          </li>
         </ul>
       </aside>
 
+      <div className="content">
+        <h1 className="title">Profesores</h1>
+        <ul>
+          {profesores.map((profesor, index) => (
+            <li key={index}>
+              {profesor.nombre} - Materias: {profesor.materias} - Grupo: {profesor.grupo} - Días: {profesor.diasDisponibles.join(', ')} - Tiempo Completo: {profesor.tiempo_completo ? 'Sí' : 'No'} - Medio Tiempo: {profesor.medio_tiempo ? 'Sí' : 'No'}
+            </li>
+          ))}
+        </ul>
+        <h3>Días y Horas que desea trabajar</h3>
 
-      <h1 className='title'>Profesores</h1>
-      <ul>
-        {profesores.map((profesor, index) => (
-          <li key={index}>
-            {profesor.nombre} - Materias: {profesor.materias} - Grupo: {profesor.grupo} - Días: {profesor.diasDisponibles.join(', ')} - Tiempo Completo: {profesor.tiempo_completo ? 'Sí' : 'No'}
-          </li>
-        ))}
-      </ul>
-      <div>
-        <h2>Agregar Profesor</h2>
-        <input
-          type="text"
-          placeholder="Nombre del profesor"
-          value={newProfesor.nombre}
-          onChange={(e) => setNewProfesor({ ...newProfesor, nombre: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Apellido Paterno"
-          value={newProfesor.materias}
-          onChange={(e) => setNewProfesor({ ...newProfesor, materias: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Apellido Materno"
-          value={newProfesor.materias}
-          onChange={(e) => setNewProfesor({ ...newProfesor, materias: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Materias (separadas por coma)"
-          value={newProfesor.materias}
-          onChange={(e) => setNewProfesor({ ...newProfesor, materias: e.target.value })}
-        />
-
-        <h3>Días Disponibles y Horas</h3>
-        {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map((dia) => (
-          <div key={dia}>
-            <label>
-              <input
-                type="checkbox"
-                checked={newProfesor.diasDisponibles.includes(dia)}
-                onChange={() => handleDiaChange(dia)}
-              />
-              {dia}
-            </label>
-
-            {/* Mostrar campo de horas solo si el día está seleccionado */}
-            {newProfesor.diasDisponibles.includes(dia) && (
-              <div>
-                <label>Horas de trabajo para {dia}: </label>
+        <div className="inputScrollContainer">
+          {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'].map((dia) => (
+            <div key={dia} className="diaContainer">
+              <label>
                 <input
-                  type="text"
-                  placeholder="Ejemplo: 08:00 - 14:00"
-                  value={newProfesor.horasTrabajo[dia] || ''}
-                  onChange={(e) => handleHorasChange(dia, e.target.value)}
+                  type="checkbox"
+                  disabled={newProfesor.tiempo_completo || newProfesor.medio_tiempo}
+                  checked={newProfesor.diasDisponibles.includes(dia)}
+                  onChange={() => handleDiaChange(dia)}
                 />
-              </div>
-            )}
-          </div>
-        ))}
+                {dia}
+              </label>
 
-        <label>
-          Tiempo Completo:
-          <input
-            type="checkbox"
-            checked={newProfesor.tiempo_completo}
-            onChange={(e) => setNewProfesor({ ...newProfesor, tiempo_completo: e.target.checked })}
-          />
-        </label>
+              {newProfesor.diasDisponibles.includes(dia) && (
+                <div className="horaContainer">
+                  <label>Hora de inicio para {dia}: </label>
+                  <input
+                    type="time"
+                    value={newProfesor.horasTrabajo[dia]?.inicio || ''}
+                    onChange={(e) => handleHoraInicioChange(dia, e.target.value)}
+                  />
+                  <label>Hora de fin para {dia}: </label>
+                  <input
+                    type="time"
+                    value={newProfesor.horasTrabajo[dia]?.fin || ''}
+                    onChange={(e) => handleHoraFinChange(dia, e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
 
-        <button onClick={handleAddProfesor}>Agregar</button>
+        <div className="checkboxGroup">
+          <label>
+            Tiempo Completo:
+            <input
+              type="checkbox"
+              checked={newProfesor.tiempo_completo}
+              onChange={handleTiempoCompletoChange}
+            />
+          </label>
+          <label>
+            Medio Tiempo:
+            <input
+              type="checkbox"
+              checked={newProfesor.medio_tiempo}
+              onChange={handleMedioTiempoChange}
+            />
+          </label>
+        </div>
+
+        <button onClick={handleAddProfesor} className="addButton">Agregar</button>
       </div>
     </div>
   );
