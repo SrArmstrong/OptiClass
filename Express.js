@@ -548,6 +548,41 @@ app.post('/guardarPeticiones', (req, res) => {
   );
 });
 
+app.post('/restricciones', (req, res) => {
+  const { horaInicio, horaTermino, numRecesos, duracionRecesos } = req.body;
+
+  if (!horaInicio || !horaTermino || numRecesos == null || duracionRecesos == null) {
+    return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+  }
+
+  const sql = `
+    INSERT INTO restricciones (hora_inicio, hora_termino, num_recesos, duracion_recesos)
+    VALUES (?, ?, ?, ?)
+  `;
+
+  db.query(sql, [horaInicio, horaTermino, numRecesos, duracionRecesos], (err, result) => {
+    if (err) {
+      console.error('Error al guardar restricciones:', err);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    } else {
+      res.json({ message: 'Restricciones guardadas correctamente', id: result.insertId });
+    }
+  });
+});
+
+// Ruta para obtener restricciones
+app.get('/mostrarrestricciones', (req, res) => {
+  const sql = 'SELECT * FROM restricciones ORDER BY fecha_creacion DESC LIMIT 1';
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error al obtener restricciones:', err);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    } else {
+      res.json(results[0] || { message: 'No hay restricciones registradas' });
+    }
+  });
+});
 
 // Iniciar el servidor
 app.listen(port, () => {

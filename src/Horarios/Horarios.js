@@ -7,13 +7,13 @@ const Horarios = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { correo, tipo } = location.state || {};
-
+/*
   useEffect(() => {
     if (!correo || !tipo) {
       navigate('/');
     }
   }, [correo, tipo, navigate]);
-
+*/
   const [dataCache, setDataCache] = useState(null);
   const [horarios, setHorarios] = useState(null);
 
@@ -118,8 +118,9 @@ const Horarios = () => {
       <aside className="sidebar">
         <h1><b>Menú</b></h1>
         <ul>
-          <li><b>Generar Horarios</b></li>
+          <li><b><a onClick={() => navigate('/horarios')}>Generar Horarios</a></b></li>
           <li><a onClick={() => navigate('/registroproal')}>Dar de alta profesores/alumnos</a></li>
+          <li><a onClick={() => navigate('/restricciones')}>Restricciones de la escuela</a></li>
           <li>Administrar información de la escuela</li>
         </ul>
       </aside>

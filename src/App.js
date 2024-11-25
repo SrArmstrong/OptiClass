@@ -10,6 +10,7 @@ import Horarios from './Horarios/Horarios';
 import Alumnos from './Alumnos/encuesta';
 import HorariosAlumnos from './Alumnos/HorariosAlumnos';
 import RegistroProAl from './Horarios/RegistroProAl';
+import Restricciones from './Horarios/RestriccionEscuela';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/horariosalumnos" element={<HorariosAlumnos />} />
         <Route path="/estadisticas" element={<Estadisticas />} />
         <Route path="/registroproal" element={<RegistroProAl />} />
+        <Route path="/restricciones" element={<Restricciones />} />
         <Route path="/horariosprof" element={<HorariosProf />} />
       </Routes>
     </Router>
